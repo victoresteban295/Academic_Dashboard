@@ -2,8 +2,10 @@ package com.academicdashboard.backend.institution;
 
 import org.springframework.stereotype.Service;
 
+import com.academicdashboard.backend.exception.ApiRequestException;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
@@ -33,17 +35,9 @@ public class DepartmentService {
         return new Query().addCriteria(Criteria.where(field).is(equalsValue));
     } 
 
-    /*********** UPDATE DEFINITION METHODS ***********/
-    private static Update setUpdate(String field, String value) {
-        return new Update().set(field, value);
-    }
 
-    private static Update pushUpdate(String field, Institution school) {
-        return new Update().push(field).value(school);
-    }
-
-    private static Update pullUpdate(String field, Institution school) {
-        return new Update().pull(field, school); 
+    private static Update pushUpdate(String field, Department dept) {
+        return new Update().push(field).value(dept);
     }
 
     /*********** OPTION DEFINITION METHOD ***********/
@@ -57,10 +51,144 @@ public class DepartmentService {
     //Create New Department | Returns Institution
     public Institution createDept(String schoolId, String deptName) {
         if(mongoTemplate.exists(query("schoolId", schoolId), Institution.class)) {
+            Institution school = mongoTemplate.findOne(query("schoolId", schoolId), Institution.class);
+            String schoolName = school.getSchoolName();
+            String deptId = publicId(10);
+            Department dept = deptRepository.insert(
+                    Department.builder()
+                    .deptId(deptId)
+                    .dept(deptName)
+                    .schoolName(schoolName)
+                    .majors(new ArrayList<>())
+                    .minors(new ArrayList<>())
+                    .build());
+            mongoTemplate.findAndModify(
+                    query("schoolId", schoolId), 
+                    new Update().push("deptNames").value(deptName), 
+                    options(true, true), 
+                    Institution.class);
+            return mongoTemplate.findAndModify(
+                    query("schoolId", schoolId), 
+                    pushUpdate("departments", dept), 
+                    options(true, true), 
+                    Institution.class);
 
+        } else {
+            throw new ApiRequestException("Invalid School Identification Code");
         }
-
-        return null;
     }
 
+    //Modify Existing Department | Returns Modified Department
+    public Department modifyDepartment(String deptId, String newName) {
+        Department dept = deptRepository
+            .findDepartmentByDeptId(deptId)
+            .orElseThrow(() -> new ApiRequestException("Invalid Department Identification Code"));
+        dept.setDept(newName);
+        return deptRepository.save(dept);
+    }
+
+    //Delete Existing Department | Void
+    public void deleteDepartment(String deptId) {
+        Department dept = deptRepository
+            .findDepartmentByDeptId(deptId)
+            .orElseThrow(() -> new ApiRequestException("Invalid Department Identification Code"));
+
+        deptRepository.delete(dept);
+    }
+
+    //Add New Major to Department and Institution | Returns Modified Department
+    public Department createMajor(String schoolId, String deptId, String major) {
+        if(mongoTemplate.exists(query("schoolId", schoolId), Institution.class)) {
+            if(mongoTemplate.exists(query("deptId", deptId), Department.class)) {
+                mongoTemplate.findAndModify(
+                        query("schoolId", schoolId), 
+                        new Update().push("majors").value(major), 
+                        options(true, true), 
+                        Institution.class);
+
+                return mongoTemplate.findAndModify(
+                        query("deptId", deptId), 
+                        new Update().push("majors").value(major),
+                        options(true, true), 
+                        Department.class);
+            } else {
+                throw new ApiRequestException("Invalid Department Identification Code");
+            }
+
+        } else {
+            throw new ApiRequestException("Invalid School Identification Code");
+        }
+    }
+
+    //Delete Existing Major from Department and Insititution | Return Modified Department
+    public Department deleteMajor(String schoolId, String deptId, String major) {
+        if(mongoTemplate.exists(query("schoolId", schoolId), Institution.class)) {
+            if(mongoTemplate.exists(query("deptId", deptId), Department.class)) {
+                mongoTemplate.findAndModify(
+                        query("schoolId", schoolId), 
+                        new Update().pull("majors", major), 
+                        options(true, true), 
+                        Institution.class);
+
+                return mongoTemplate.findAndModify(
+                        query("deptId", deptId), 
+                        new Update().pull("majors", major),
+                        options(true, true), 
+                        Department.class);
+            } else {
+                throw new ApiRequestException("Invalid Department Identification Code");
+            }
+
+        } else {
+            throw new ApiRequestException("Invalid School Identification Code");
+        }
+    }
+
+    //Add New Minor to Department and Institution | Returns Modified Department
+    public Department createMinor(String schoolId, String deptId, String minor) {
+        if(mongoTemplate.exists(query("schoolId", schoolId), Institution.class)) {
+            if(mongoTemplate.exists(query("deptId", deptId), Department.class)) {
+                mongoTemplate.findAndModify(
+                        query("schoolId", schoolId), 
+                        new Update().push("minors").value(minor), 
+                        options(true, true), 
+                        Institution.class);
+
+                return mongoTemplate.findAndModify(
+                        query("deptId", deptId), 
+                        new Update().push("minors").value(minor),
+                        options(true, true), 
+                        Department.class);
+            } else {
+                throw new ApiRequestException("Invalid Department Identification Code");
+            }
+
+        } else {
+            throw new ApiRequestException("Invalid School Identification Code");
+        }
+    }
+
+    //Delete Existing Major from Department and Insititution | Return Modified Department
+    public Department deleteMinor(String schoolId, String deptId, String minor) {
+        if(mongoTemplate.exists(query("schoolId", schoolId), Institution.class)) {
+            if(mongoTemplate.exists(query("deptId", deptId), Department.class)) {
+                mongoTemplate.findAndModify(
+                        query("schoolId", schoolId), 
+                        new Update().pull("minors", minor), 
+                        options(true, true), 
+                        Institution.class);
+
+                return mongoTemplate.findAndModify(
+                        query("deptId", deptId), 
+                        new Update().pull("minors", minor),
+                        options(true, true), 
+                        Department.class);
+            } else {
+                throw new ApiRequestException("Invalid Department Identification Code");
+            }
+
+        } else {
+            throw new ApiRequestException("Invalid School Identification Code");
+        }
+    }
 }

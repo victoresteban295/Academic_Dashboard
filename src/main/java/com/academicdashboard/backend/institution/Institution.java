@@ -30,12 +30,11 @@ public class Institution {
     private String profIdCode;
     private String studIdCode;
 
+    @DocumentReference
+    private List<Department> departments;
     private List<String> deptNames;
     private List<String> majors;
     private List<String> minors;
-
-    @DocumentReference
-    private List<Department> departments;
 
     @DocumentReference
     private List<Professor> professors;

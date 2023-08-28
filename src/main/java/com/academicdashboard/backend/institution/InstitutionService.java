@@ -39,6 +39,10 @@ public class InstitutionService {
                 .studIdCode(studIdCode)
                 .departments(new ArrayList<>())
                 .deptNames(new ArrayList<>())
+                .majors(new ArrayList<>())
+                .minors(new ArrayList<>())
+                .professors(new ArrayList<>())
+                .students(new ArrayList<>())
                 .build());
         
         return school;
@@ -65,15 +69,15 @@ public class InstitutionService {
     //Verify Academic Institution | Return Academic Insitution
     public VerificationResponse verifyInstitution(String profile, String codeId) {
         Institution school;
-        if(profile == "STUDENT") {
+        if(profile.equals("STUDENT")) {
             school = institutionRepository
                 .findInstitutionByStudIdCode(codeId)
-                .orElseThrow(() -> new ApiRequestException("Invalid Identification Code"));
+                .orElseThrow(() -> new ApiRequestException("Invalid Student Identification Code"));
 
         } else {
             school = institutionRepository
                 .findInstitutionByProfIdCode(codeId)
-                .orElseThrow(() -> new ApiRequestException("Invalid Identification Code"));
+                .orElseThrow(() -> new ApiRequestException("Invalid Professor Identification Code"));
         }
 
         VerificationResponse res = VerificationResponse.builder()
