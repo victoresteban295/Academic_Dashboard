@@ -40,6 +40,7 @@ public class User implements UserDetails {
 
     //User Information
     private String firstname;
+    private String middlename;
     private String lastname;
 
     //Account Information

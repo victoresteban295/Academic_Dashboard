@@ -46,7 +46,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
     /* Register New User */
-    public AuthenticationResponse register(RegisterRequest request) {
+    public void register(RegisterRequest request) {
 
         Profile profile;
         Role role;
@@ -56,16 +56,33 @@ public class AuthenticationService {
             profile = studentRepository
                 .insert(Student.builder()
                         .username(request.getUsername())
-                        .firstName(request.getFirstName())
-                        .lastName(request.getLastName())
+                        .firstname(request.getFirstname())
+                        .middlename(request.getMiddlename())
+                        .lastname(request.getLastname())
+                        .birthMonth(request.getBirthMonth())
+                        .birthDay(request.getBirthDay())
+                        .birthYear(request.getBirthYear())
+                        .gradeLvl(request.getGradeLvl())
+                        .major(request.getMajor())
+                        .minor(request.getMinor())
+                        .concentration(request.getConcentration())
                         .build());
             role = Role.STUDENT;
         } else {
             profile = professorRepository
                 .insert(Professor.builder()
                         .username(request.getUsername())
-                        .firstName(request.getFirstName())
-                        .lastName(request.getLastName())
+                        .firstname(request.getFirstname())
+                        .middlename(request.getMiddlename())
+                        .lastname(request.getLastname())
+                        .birthMonth(request.getBirthMonth())
+                        .birthDay(request.getBirthDay())
+                        .birthYear(request.getBirthYear())
+                        .department(request.getDepartment())
+                        .academicRole(request.getAcademicRole())
+                        .apptYear(request.getApptYear())
+                        .officeBuilding(request.getOfficeBuilding())
+                        .officeRoom(request.getOfficeRoom())
                         .build());
             role = Role.PROFESSOR;
         }
@@ -73,10 +90,12 @@ public class AuthenticationService {
         //Create New User Using Builder
         var user = User.builder()
             .userId(userId)
-            .firstname(request.getFirstName())
-            .lastname(request.getLastName())
+            .firstname(request.getFirstname())
+            .middlename(request.getMiddlename())
+            .lastname(request.getLastname())
             .profileType(request.getProfileType())
             .email(request.getEmail())
+            .phone(request.getPhone())
             .username(request.getUsername())
             .password(passwordEncoder.encode(request.getPassword()))
             .role(role)
@@ -91,18 +110,6 @@ public class AuthenticationService {
             .build();
 
         userRepository.save(user); //Save New User to Repository
-
-        //Create new JWT Token for Response
-        var jwtToken = jwtService.generateToken(user);
-        var refreshToken = jwtService.generateRefreshToken(user);
-        saveUserToken(user.getUsername(), TokenType.ACCESS, jwtToken); //Store Access Token
-        saveUserToken(user.getUsername(), TokenType.REFRESH, refreshToken); //Store Refresh Token
-
-        return AuthenticationResponse.builder()
-            .username(request.getUsername())
-            .accessToken(jwtToken)
-            .refreshToken(refreshToken)
-            .build();
     }
 
     /* Authenticate Existing User */

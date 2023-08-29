@@ -24,6 +24,5 @@ public class Professor extends Profile {
     private int apptYear; //Appointed Year
     private String officeBuilding;
     private String officeRoom;
-    private String researchArea;
     private List<OfficeHrs> officeHrs;
 }

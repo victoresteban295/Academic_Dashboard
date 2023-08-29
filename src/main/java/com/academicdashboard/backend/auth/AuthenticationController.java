@@ -21,12 +21,10 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> registerStudent(
+    public ResponseEntity<Void> registerStudent(
             @RequestBody RegisterRequest request) {
-
-        return new ResponseEntity<AuthenticationResponse>(
-                authenticationService.register(request), 
-                HttpStatus.OK);
+        authenticationService.register(request);
+        return new ResponseEntity<Void>(HttpStatus.CREATED);
     }
 
     @PostMapping("/authenticate")

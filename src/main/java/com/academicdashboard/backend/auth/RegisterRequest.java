@@ -11,16 +11,36 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RegisterRequest {
 
-    private String firstName;
-    private String lastName;
-
+    //Academic Instituiton
     private String profileType; //STUDENT || PROFESSOR 
+    private String schoolName; //Academic Institution
+    private String schoolId; //Student/Professor Identification Code
+
+    //Personal Information
+    private String firstname;
+    private String middlename;
+    private String lastname;
+    private String birthMonth;
+    private int birthDay;
+    private int birthYear;
+
+    //Account Information
     private String email;
     private String phone;
     private String username; 
     private String password;
 
-    private String schoolName;
-    private String schoolId;
+    //Professor Information
+    private String academicRole;
+    private int apptYear;
+    private String department;
+    private String officeBuilding;
+    private String officeRoom;
+
+    //Student Information
+    private String gradeLvl;
+    private String major;
+    private String minor;
+    private String concentration;
 
 }
