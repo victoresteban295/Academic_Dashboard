@@ -6,12 +6,16 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import java.security.Key;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -60,10 +64,17 @@ public class JwtService {
             UserDetails userDetails,
             long expiration) {
 
+        String role = "";
+        Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+        for(GrantedAuthority authority : authorities) {
+            role = authority.getAuthority().substring(5);
+        }
+
         return Jwts
             .builder()
             .setClaims(extraClaims)
             .setSubject(userDetails.getUsername())
+            .claim("role", role)
             .setIssuedAt(new Date(System.currentTimeMillis())) //when JWT was created
             .setExpiration(new Date(System.currentTimeMillis() + expiration)) //Length of Token Validation
             .signWith(getSignInKey(), SignatureAlgorithm.HS256) //Sign JWT

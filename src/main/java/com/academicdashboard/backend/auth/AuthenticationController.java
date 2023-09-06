@@ -43,7 +43,7 @@ public class AuthenticationController {
         authenticationService.refreshToken(request, response);
     }
 
-    @PostMapping("/valid/acces-token")
+    @PostMapping("/valid/access-token")
     public ResponseEntity<Void> isAccessTokenValid(
             @RequestBody Map<String,String>  payload) {
         authenticationService.isAccessTokenValid(
