@@ -1,6 +1,7 @@
 package com.academicdashboard.backend.auth;
 
 import java.io.IOException;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +41,15 @@ public class AuthenticationController {
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         //Request New Access Token (JWT) Using Refresh Token
         authenticationService.refreshToken(request, response);
+    }
+
+    @PostMapping("/valid/acces-token")
+    public ResponseEntity<Void> isAccessTokenValid(
+            @RequestBody Map<String,String>  payload) {
+        authenticationService.isAccessTokenValid(
+                payload.get("username"), 
+                payload.get("accessToken"));
+        return new ResponseEntity<Void>(HttpStatus.OK);
     }
 
 }
