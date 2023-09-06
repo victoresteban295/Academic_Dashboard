@@ -27,7 +27,6 @@ import com.academicdashboard.backend.user.Role;
 import com.academicdashboard.backend.user.User;
 import com.academicdashboard.backend.user.UserRepository;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -141,13 +140,13 @@ public class AuthenticationService {
     }
 
     //Request New Access Token (JWT) Using Refresh Token
-    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public AuthenticationResponse refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         final String refreshToken;
         final String username;
 
         if(authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return;
+            throw new ApiRequestException("No Access Token Found");
         }
 
         refreshToken = authHeader.substring(7); //Extracts JWT (Removes "Bearer ")
@@ -168,17 +167,21 @@ public class AuthenticationService {
                 isTokenValid = true;
             } else {isTokenValid = false;}
 
-            if(jwtService.isTokenValid(refreshToken, user) || isTokenValid) {
+            if(jwtService.isTokenValid(refreshToken, user) && isTokenValid) {
                 var accessToken = jwtService.generateToken(user); //Generate New Access Token
                 revokeAllUserAccessTokens(user.getUsername()); //Expire & Revoke All Old Access Tokens
                 saveUserToken(user.getUsername(), TokenType.ACCESS, accessToken); //Save New AccessToken to Repo
-                var authResponse = AuthenticationResponse.builder()
+
+                return AuthenticationResponse.builder()
                     .username(username)
                     .accessToken(accessToken)
                     .refreshToken(refreshToken) //Same Refresh Token Provided
                     .build();
-                new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
+            } else {
+                throw new ApiRequestException("Invalid Refresh Token");
             }
+        } else {
+            throw new ApiRequestException("Invalid Refresh Token");
         }
     }
 

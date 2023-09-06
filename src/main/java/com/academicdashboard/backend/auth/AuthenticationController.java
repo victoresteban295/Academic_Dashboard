@@ -38,9 +38,14 @@ public class AuthenticationController {
     }
 
     @PostMapping("/refresh-token")
-    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public ResponseEntity<AuthenticationResponse> refreshToken(
+            HttpServletRequest request, 
+            HttpServletResponse response) throws IOException {
+
         //Request New Access Token (JWT) Using Refresh Token
-        authenticationService.refreshToken(request, response);
+        return new ResponseEntity<AuthenticationResponse>(
+            authenticationService.refreshToken(request, response),
+                HttpStatus.OK);
     }
 
     @PostMapping("/valid/access-token")
