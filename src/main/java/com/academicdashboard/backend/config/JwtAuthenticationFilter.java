@@ -1,6 +1,7 @@
 package com.academicdashboard.backend.config;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,6 +18,7 @@ import com.academicdashboard.backend.token.TokenType;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -85,4 +87,67 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         filterChain.doFilter(request, response); //Continue to Next Filter in FilterChain
     }
+
+    // @Override
+    // protected void doFilterInternal(
+    //         @NonNull HttpServletRequest request, 
+    //         @NonNull HttpServletResponse response, 
+    //         @NonNull FilterChain filterChain) throws ServletException, IOException {
+    //
+    //     if(request.getCookies() == null) {
+    //         filterChain.doFilter(request, response);
+    //         return;
+    //     }
+    //
+    //     final String jwt = Arrays.stream(request.getCookies())
+    //         .filter(cookie-> "accessToken".equals(cookie.getName()))
+    //         .map(Cookie::getValue)
+    //         .findAny().orElse(null);
+    //     final String username;
+    //     final Token token;
+    //
+    //     // No Access Token (JWT) is Found in Cookie
+    //     if(jwt == null) {
+    //         filterChain.doFilter(request, response);
+    //         return;
+    //     }
+    //
+    //     username = jwtService.extractUsername(jwt); //Extract username from JWT
+    //     
+    //     token = tokenRepository.findByToken(jwt).get();
+    //
+    //     //Make Sure Token Passed is an Access Token & Belongs to User
+    //     if(!username.equals(token.getUsername()) || !token.getTokenType().equals(TokenType.ACCESS)) {
+    //         filterChain.doFilter(request, response);
+    //         return;
+    //     }
+    //
+    //     /* User Is Not Yet Authenticated */
+    //     if(username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+    //         //Obtain UserDetails Obj using Username extracted from JWT
+    //         UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+    //
+    //         var isTokenValid = tokenRepository.findByToken(jwt)
+    //             .map(t -> !t.isExpired() && !t.isRevoked())
+    //             .orElse(false);
+    //
+    //         //Check if JWT is Valid
+    //         //If So, Update Security Context Using UsernamePasswordAuthenticationToken
+    //         if(jwtService.isTokenValid(jwt, userDetails) && isTokenValid) {
+    //             //Create UsernamePasswordAuthenticationToken
+    //             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+    //                     userDetails, 
+    //                     null, //credentials 
+    //                     userDetails.getAuthorities());
+    //
+    //             //Add More Details to Token Using Request
+    //             authToken.setDetails(
+    //                     new WebAuthenticationDetailsSource().buildDetails(request));
+    //
+    //             //Update Security Context
+    //             SecurityContextHolder.getContext().setAuthentication(authToken); 
+    //         }
+    //     }
+    //     filterChain.doFilter(request, response); //Continue to Next Filter in FilterChain
+    // }
 }

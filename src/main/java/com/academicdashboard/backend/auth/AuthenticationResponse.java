@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AuthenticationResponse {
     private String username;
+    private String role; //STUDENT || PROFESSOR
     private String accessToken; //JWT
     private String refreshToken;
 }

@@ -134,13 +134,61 @@ public class AuthenticationService {
 
         return AuthenticationResponse.builder()
             .username(request.getUsername())
+            .role(user.getRole().toString())
             .accessToken(jwtToken)
             .refreshToken(refreshToken)
             .build();
     }
 
     //Request New Access Token (JWT) Using Refresh Token
-    public AuthenticationResponse refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public AuthenticationResponse refreshToken(
+            String username, 
+            String role, 
+            String refreshToken) {
+
+        //Ensures Cookies Were Found
+        boolean hasCookies = (username != null) && (role != null) && (refreshToken != null);
+        if(!hasCookies) {
+            throw new ApiRequestException("No Access Token Found");
+        }
+
+        //Ensure Token is a Refresh Token
+        Token refreshTokenObj = tokenRepository.findByToken(refreshToken) 
+            .orElseThrow( () -> new ApiRequestException("Invalid Refresh Token"));
+
+        username = jwtService.extractUsername(refreshToken); //Extract username from JWT
+
+        if((username != null) && (refreshTokenObj.getTokenType() == TokenType.REFRESH)) {
+            var user = this.userRepository.findUserByUsername(username)
+                .orElseThrow();
+
+            boolean isTokenValid;
+            //NOTE: jwtService.isTokenValid() methods checks the actual expiration of the token itself
+            //Ensure Refresh Token Has Not Been Revoked By Our Backend 
+            if(!refreshTokenObj.isRevoked() && !refreshTokenObj.isExpired()) {
+                isTokenValid = true;
+            } else {isTokenValid = false;}
+
+            if(jwtService.isTokenValid(refreshToken, user) && isTokenValid) {
+                var accessToken = jwtService.generateToken(user); //Generate New Access Token
+                revokeAllUserAccessTokens(user.getUsername()); //Expire & Revoke All Old Access Tokens
+                saveUserToken(user.getUsername(), TokenType.ACCESS, accessToken); //Save New AccessToken to Repo
+
+                return AuthenticationResponse.builder()
+                    .username(username)
+                    .role(role)
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken) //Same Refresh Token Provided
+                    .build();
+            } else {
+                throw new ApiRequestException("Invalid Refresh Token");
+            }
+        } else {
+            throw new ApiRequestException("Invalid Refresh Token");
+        }
+    }
+    //Request New Access Token (JWT) Using Refresh Token
+    public AuthenticationResponse refreshToken01(HttpServletRequest request, HttpServletResponse response) throws IOException {
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         final String refreshToken;
         final String username;
@@ -185,7 +233,7 @@ public class AuthenticationService {
         }
     }
 
-    public void isAccessTokenValid(String username, String jwt) {
+    public void isAccessTokenValid01(String username, String jwt) {
         //Check Token is Expired, Revoked, or is an Access Token
         User user = userRepository
             .findUserByUsername(username)
@@ -198,6 +246,32 @@ public class AuthenticationService {
         boolean isTokenValid = (jwtService.isTokenValid(jwt, user)) && !accessToken.isRevoked() && !accessToken.isExpired();
         boolean isAccessToken = accessToken.getTokenType() == TokenType.ACCESS;
         if(!isTokenValid && !isAccessToken) {
+           throw new ApiRequestException("Invalid Access Token");
+        }
+    }
+
+    public void isAccessTokenValid(
+            String username, 
+            String role, 
+            String accessToken) {
+
+        //Check if User with that Username Exists
+        User user = userRepository
+            .findUserByUsername(username)
+            .orElseThrow(() -> new ApiRequestException("Invalid Username"));
+
+        //Check if Roles Provided Matches
+        if(!user.getRole().toString().equals(role)) {
+            throw new ApiRequestException("Invalid Role");
+        }
+
+        Token jwt = tokenRepository
+            .findByToken(accessToken)
+            .orElseThrow(() -> new ApiRequestException("Invalid Access Token"));
+
+        boolean isTokenValid = (jwtService.isTokenValid(accessToken, user)) && !jwt.isRevoked() && !jwt.isExpired();
+        boolean isAccessToken = jwt.getTokenType().equals(TokenType.ACCESS);
+        if(!isTokenValid || !isAccessToken) {
            throw new ApiRequestException("Invalid Access Token");
         }
     }
