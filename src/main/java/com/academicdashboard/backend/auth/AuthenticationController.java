@@ -35,7 +35,7 @@ public class AuthenticationController {
     //             HttpStatus.OK);
     // }
 
-    record Authorize(String role) {}
+    record Authorize(String username, String role) {}
 
     @PostMapping("/authenticate")
     public ResponseEntity<Authorize> authenticateUser(
@@ -70,7 +70,7 @@ public class AuthenticationController {
             role = "student";
         }
 
-        Authorize authorize = new Authorize(role);
+        Authorize authorize = new Authorize(authResponse.getUsername(), role);
         
         return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, userCookie.toString())
@@ -139,7 +139,7 @@ public class AuthenticationController {
     // }
 
     @PostMapping("/valid/access-token")
-    public ResponseEntity<Void> isAccessTokenValid(
+    public ResponseEntity<Authorize> isAccessTokenValid(
             @CookieValue(name = "username") String username,
             @CookieValue(name = "role") String role,
             @CookieValue(name = "accessToken") String accessToken) {
@@ -150,7 +150,16 @@ public class AuthenticationController {
                 role,
                 accessToken);
 
-        return new ResponseEntity<Void>(HttpStatus.OK);
+        String authRole;
+        if(role.equals("PROFESSOR")) {
+            authRole = "professor";
+        } else {
+            authRole = "student";
+        }
+
+        Authorize authorize = new Authorize(username, authRole);
+
+        return new ResponseEntity<Authorize>(authorize, HttpStatus.OK);
     }
 
 }
