@@ -1,12 +1,10 @@
 package com.academicdashboard.backend.auth;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -28,8 +26,6 @@ import com.academicdashboard.backend.user.User;
 import com.academicdashboard.backend.user.UserRepository;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -185,68 +181,6 @@ public class AuthenticationService {
             }
         } else {
             throw new ApiRequestException("Invalid Refresh Token");
-        }
-    }
-    //Request New Access Token (JWT) Using Refresh Token
-    public AuthenticationResponse refreshToken01(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-        final String refreshToken;
-        final String username;
-
-        if(authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new ApiRequestException("No Access Token Found");
-        }
-
-        refreshToken = authHeader.substring(7); //Extracts JWT (Removes "Bearer ")
-        //Ensure Token is a Refresh Token
-        Token refreshTokenObj = tokenRepository.findByToken(refreshToken) 
-            .orElseThrow( () -> new ApiRequestException("Invalid Refresh Token"));
-
-        username = jwtService.extractUsername(refreshToken); //Extract username from JWT
-
-        if((username != null) && (refreshTokenObj.getTokenType() == TokenType.REFRESH)) {
-            var user = this.userRepository.findUserByUsername(username)
-                .orElseThrow();
-
-            boolean isTokenValid;
-            //NOTE: jwtService.isTokenValid() methods checks the actual expiration of the token itself
-            //Ensure Refresh Token Has Not Been Revoked By Our Backend 
-            if(!refreshTokenObj.isRevoked() && !refreshTokenObj.isExpired()) {
-                isTokenValid = true;
-            } else {isTokenValid = false;}
-
-            if(jwtService.isTokenValid(refreshToken, user) && isTokenValid) {
-                var accessToken = jwtService.generateToken(user); //Generate New Access Token
-                revokeAllUserAccessTokens(user.getUsername()); //Expire & Revoke All Old Access Tokens
-                saveUserToken(user.getUsername(), TokenType.ACCESS, accessToken); //Save New AccessToken to Repo
-
-                return AuthenticationResponse.builder()
-                    .username(username)
-                    .accessToken(accessToken)
-                    .refreshToken(refreshToken) //Same Refresh Token Provided
-                    .build();
-            } else {
-                throw new ApiRequestException("Invalid Refresh Token");
-            }
-        } else {
-            throw new ApiRequestException("Invalid Refresh Token");
-        }
-    }
-
-    public void isAccessTokenValid01(String username, String jwt) {
-        //Check Token is Expired, Revoked, or is an Access Token
-        User user = userRepository
-            .findUserByUsername(username)
-            .orElseThrow(() -> new ApiRequestException("Invalid Username"));
-
-        Token accessToken = tokenRepository
-            .findByToken(jwt)
-            .orElseThrow(() -> new ApiRequestException("Invalid Access Token"));
-
-        boolean isTokenValid = (jwtService.isTokenValid(jwt, user)) && !accessToken.isRevoked() && !accessToken.isExpired();
-        boolean isAccessToken = accessToken.getTokenType() == TokenType.ACCESS;
-        if(!isTokenValid && !isAccessToken) {
-           throw new ApiRequestException("Invalid Access Token");
         }
     }
 

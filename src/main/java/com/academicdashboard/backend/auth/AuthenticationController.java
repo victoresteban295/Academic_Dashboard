@@ -48,28 +48,26 @@ public class AuthenticationController {
         } else {
             role = "student";
         }
-        String path = "/" + role + "/" + authResponse.getUsername();
-
 
         ResponseCookie userCookie = ResponseCookie
             .from("username", authResponse.getUsername())
             .httpOnly(true)
-            .path(path)
+            .path("/")
             .build();
         ResponseCookie roleCookie = ResponseCookie
             .from("role", authResponse.getRole())
             .httpOnly(true)
-            .path(path)
+            .path("/")
             .build();
         ResponseCookie refreshCookie = ResponseCookie
             .from("refreshToken", authResponse.getRefreshToken())
             .httpOnly(true)
-            .path(path)
+            .path("/")
             .build();
         ResponseCookie accessCookie = ResponseCookie
             .from("accessToken", authResponse.getAccessToken())
             .httpOnly(true)
-            .path(path)
+            .path("/")
             .build();
 
         Authorize authorize = new Authorize(authResponse.getUsername(), role);
@@ -99,8 +97,16 @@ public class AuthenticationController {
             @CookieValue(name = "role") String role,
             @CookieValue(name = "refreshToken") String refreshToken) {
 
+
         AuthenticationResponse authResponse = authenticationService
             .refreshToken(username, role, refreshToken);
+
+        String authRole;
+        if(role.equals("PROFESSOR")) {
+            authRole = "professor";
+        } else {
+            authRole = "student";
+        }
 
         ResponseCookie userCookie = ResponseCookie
             .from("username", authResponse.getUsername())
@@ -122,13 +128,6 @@ public class AuthenticationController {
             .httpOnly(true)
             .path("/")
             .build();
-
-        String authRole;
-        if(role.equals("PROFESSOR")) {
-            authRole = "professor";
-        } else {
-            authRole = "student";
-        }
 
         Authorize authorize = new Authorize(username, authRole);
 
