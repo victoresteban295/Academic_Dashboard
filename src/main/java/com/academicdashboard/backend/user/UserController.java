@@ -16,7 +16,7 @@ public class UserController {
 
     private final UserService userService;
 
-    @GetMapping("/{role}/{username}")
+    @GetMapping("user/profile/{role}/{username}")
     public ResponseEntity<User> getUserDetails(
             @PathVariable String username, 
             @PathVariable String role) {
