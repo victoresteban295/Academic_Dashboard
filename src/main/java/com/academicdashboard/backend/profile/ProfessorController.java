@@ -16,13 +16,12 @@ public class ProfessorController {
 
     private final ProfessorService professorService;
 
-    @GetMapping("get/{role}/{username}")
-    public ResponseEntity<Professor> getUserDetails(
-            @PathVariable String username, 
-            @PathVariable String role) {
+    @GetMapping("get/{username}")
+    public ResponseEntity<Professor> getProfessorProfile(
+            @PathVariable String username) {
 
         return new ResponseEntity<Professor>(
-                professorService.getProfessorProfile(username, role),
+                professorService.getProfessorProfile(username, "PROFESSOR"),
                 HttpStatus.OK);
     }
 
