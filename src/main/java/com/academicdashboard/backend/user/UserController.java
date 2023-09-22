@@ -16,15 +16,15 @@ public class UserController {
 
     private final UserService userService;
 
-    @GetMapping("user/profile/{role}/{username}")
-    public ResponseEntity<User> getUserDetails(
-            @PathVariable String username, 
-            @PathVariable String role) {
-
-        return new ResponseEntity<User>(
-                userService.getUserDetails(username, role), 
-                HttpStatus.OK);
-    }
+    // @GetMapping("user/profile/{role}/{username}")
+    // public ResponseEntity<User> getUserDetails(
+    //         @PathVariable String username, 
+    //         @PathVariable String role) {
+    //
+    //     return new ResponseEntity<User>(
+    //             userService.getUserDetails(username, role), 
+    //             HttpStatus.OK);
+    // }
 
     @GetMapping("/auth/username/taken/{username}")
     public ResponseEntity<Void> usernameExist(@PathVariable String username) {

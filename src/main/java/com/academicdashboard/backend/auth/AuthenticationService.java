@@ -123,66 +123,66 @@ public class AuthenticationService {
 
         //Create new JWT Token for Response
         var jwtToken = jwtService.generateToken(user); //Generate JWT
-        var refreshToken = jwtService.generateRefreshToken(user);//Generate Refresh Token
+        // var refreshToken = jwtService.generateRefreshToken(user);//Generate Refresh Token
         revokeAllUserTokens(user.getUsername()); //Expire & Revoke All Old Tokens
         saveUserToken(user.getUsername(), TokenType.ACCESS, jwtToken); //Store Access Token
-        saveUserToken(user.getUsername(), TokenType.REFRESH, refreshToken); //Store Refresh Token
+        // saveUserToken(user.getUsername(), TokenType.REFRESH, refreshToken); //Store Refresh Token
 
         return AuthenticationResponse.builder()
             .username(request.getUsername())
             .role(user.getRole().toString())
             .accessToken(jwtToken)
-            .refreshToken(refreshToken)
+            // .refreshToken(refreshToken)
             .build();
     }
 
     //Request New Access Token (JWT) Using Refresh Token
-    public AuthenticationResponse refreshToken(
-            String username, 
-            String role, 
-            String refreshToken) {
-
-        //Ensures Cookies Were Found
-        boolean hasCookies = (username != null) && (role != null) && (refreshToken != null);
-        if(!hasCookies) {
-            throw new ApiRequestException("No Access Token Found");
-        }
-
-        //Ensure Token is a Refresh Token
-        Token refreshTokenObj = tokenRepository.findByToken(refreshToken) 
-            .orElseThrow( () -> new ApiRequestException("Invalid Refresh Token"));
-
-        username = jwtService.extractUsername(refreshToken); //Extract username from JWT
-
-        if((username != null) && (refreshTokenObj.getTokenType() == TokenType.REFRESH)) {
-            var user = this.userRepository.findUserByUsername(username)
-                .orElseThrow();
-
-            boolean isTokenValid;
-            //NOTE: jwtService.isTokenValid() methods checks the actual expiration of the token itself
-            //Ensure Refresh Token Has Not Been Revoked By Our Backend 
-            if(!refreshTokenObj.isRevoked() && !refreshTokenObj.isExpired()) {
-                isTokenValid = true;
-            } else {isTokenValid = false;}
-
-            if(jwtService.isTokenValid(refreshToken, user) && isTokenValid) {
-                var accessToken = jwtService.generateToken(user); //Generate New Access Token
-                revokeAllUserAccessTokens(user.getUsername()); //Expire & Revoke All Old Access Tokens
-                saveUserToken(user.getUsername(), TokenType.ACCESS, accessToken); //Save New AccessToken to Repo
-
-                return AuthenticationResponse.builder()
-                    .username(username)
-                    .role(role)
-                    .accessToken(accessToken)
-                    .refreshToken(refreshToken) //Same Refresh Token Provided
-                    .build();
-            } else {
-                throw new ApiRequestException("Invalid Refresh Token");
-            }
-        } else {
-            throw new ApiRequestException("Invalid Refresh Token");
-        }
-    }
+    // public AuthenticationResponse refreshToken(
+    //         String username, 
+    //         String role, 
+    //         String refreshToken) {
+    //
+    //     //Ensures Cookies Were Found
+    //     boolean hasCookies = (username != null) && (role != null) && (refreshToken != null);
+    //     if(!hasCookies) {
+    //         throw new ApiRequestException("No Access Token Found");
+    //     }
+    //
+    //     //Ensure Token is a Refresh Token
+    //     Token refreshTokenObj = tokenRepository.findByToken(refreshToken) 
+    //         .orElseThrow( () -> new ApiRequestException("Invalid Refresh Token"));
+    //
+    //     username = jwtService.extractUsername(refreshToken); //Extract username from JWT
+    //
+    //     if((username != null) && (refreshTokenObj.getTokenType() == TokenType.REFRESH)) {
+    //         var user = this.userRepository.findUserByUsername(username)
+    //             .orElseThrow();
+    //
+    //         boolean isTokenValid;
+    //         //NOTE: jwtService.isTokenValid() methods checks the actual expiration of the token itself
+    //         //Ensure Refresh Token Has Not Been Revoked By Our Backend 
+    //         if(!refreshTokenObj.isRevoked() && !refreshTokenObj.isExpired()) {
+    //             isTokenValid = true;
+    //         } else {isTokenValid = false;}
+    //
+    //         if(jwtService.isTokenValid(refreshToken, user) && isTokenValid) {
+    //             var accessToken = jwtService.generateToken(user); //Generate New Access Token
+    //             revokeAllUserAccessTokens(user.getUsername()); //Expire & Revoke All Old Access Tokens
+    //             saveUserToken(user.getUsername(), TokenType.ACCESS, accessToken); //Save New AccessToken to Repo
+    //
+    //             return AuthenticationResponse.builder()
+    //                 .username(username)
+    //                 .role(role)
+    //                 .accessToken(accessToken)
+    //                 .refreshToken(refreshToken) //Same Refresh Token Provided
+    //                 .build();
+    //         } else {
+    //             throw new ApiRequestException("Invalid Refresh Token");
+    //         }
+    //     } else {
+    //         throw new ApiRequestException("Invalid Refresh Token");
+    //     }
+    // }
 
     public void isAccessTokenValid(
             String username, 
@@ -246,30 +246,30 @@ public class AuthenticationService {
         tokenRepository.saveAll(validUserTokens); //Add Updates to Repo
     }
 
-    private void revokeAllUserAccessTokens(String username) {
-        //Create a Query for User's Existing Tokens That Aren't Expired nor Revoked
-        Query query = new Query(new Criteria()
-                .andOperator(
-                    new Criteria().orOperator(
-                        Criteria.where("revoked").is(false), 
-                        Criteria.where("expired").is(false)), 
-                    Criteria.where("username").is(username)));
-
-        //Extracted Tokens (the match query) from Repository 
-        var validUserTokens = mongoTemplate.find(query, Token.class);
-        if(validUserTokens.isEmpty()) return; //Return if not tokens 
-
-        //Update Each Individual User Access Token That Aren't Expired nor Revoked
-        validUserTokens.forEach(token -> {
-            //Revoke & Expire Access Tokens ONLY
-            if(token.getTokenType() == TokenType.ACCESS) {
-                token.setExpired(true);
-                token.setRevoked(true);
-            }
-        });
-
-        tokenRepository.saveAll(validUserTokens); //Add Updates to Repo
-
-    }
+    // private void revokeAllUserAccessTokens(String username) {
+    //     //Create a Query for User's Existing Tokens That Aren't Expired nor Revoked
+    //     Query query = new Query(new Criteria()
+    //             .andOperator(
+    //                 new Criteria().orOperator(
+    //                     Criteria.where("revoked").is(false), 
+    //                     Criteria.where("expired").is(false)), 
+    //                 Criteria.where("username").is(username)));
+    //
+    //     //Extracted Tokens (the match query) from Repository 
+    //     var validUserTokens = mongoTemplate.find(query, Token.class);
+    //     if(validUserTokens.isEmpty()) return; //Return if not tokens 
+    //
+    //     //Update Each Individual User Access Token That Aren't Expired nor Revoked
+    //     validUserTokens.forEach(token -> {
+    //         //Revoke & Expire Access Tokens ONLY
+    //         if(token.getTokenType() == TokenType.ACCESS) {
+    //             token.setExpired(true);
+    //             token.setRevoked(true);
+    //         }
+    //     });
+    //
+    //     tokenRepository.saveAll(validUserTokens); //Add Updates to Repo
+    //
+    // }
 
 }

@@ -23,7 +23,7 @@ public class Token {
     @Indexed(unique = true)
     public String token;
 
-    private TokenType tokenType; //ACCESS || REFRESH
+    private TokenType tokenType; //ACCESS
     private String username;
     private boolean revoked; 
     private boolean expired;
