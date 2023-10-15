@@ -63,6 +63,18 @@ public class UserController {
                 HttpStatus.OK);
     }
 
+    @PutMapping("/{username}/rearrange/grouplist") 
+    public ResponseEntity<List<Grouplist>> rearrangeGrouplists(
+            @PathVariable String username, 
+            @RequestBody List<Grouplist> grouplists) {
+
+        return new ResponseEntity<List<Grouplist>>(
+                userService.rearrangeGrouplists(
+                    username, 
+                    grouplists), 
+                HttpStatus.OK);
+    }
+
     /**************************************/
     /* ********** Authenticate ********** */
     /**************************************/

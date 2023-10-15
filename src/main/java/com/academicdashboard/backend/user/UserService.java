@@ -99,6 +99,23 @@ public class UserService {
         }
     }
 
+    public List<Grouplist> rearrangeGrouplists(String username, List<Grouplist> rearrangeGroups) {
+        if(verifyUser(username)) {
+            User user = userRepository
+                .findUserByUsername(username)
+                .orElseThrow(() -> new ApiRequestException("Provided Wrong Username"));
+            List<Grouplist> grouplists = new ArrayList<>();
+            for(Grouplist rearrangeGroup : rearrangeGroups) {
+                grouplists.add(mongoTemplate.findOne(query("groupId", rearrangeGroup.getGroupId()), Grouplist.class)); 
+            }
+            user.setGrouplists(grouplists); //Update User's Checklists
+            userRepository.save(user); //Save User with Updated Checklists
+            return user.getGrouplists(); 
+        } else {
+            throw new ApiRequestException("Wrong Username Provided");
+        }
+    }
+
     /* Username, Email, Phone Validation */
     public void usernameExist(String username) {
         //True = Exist || False == Doesn't Exist
