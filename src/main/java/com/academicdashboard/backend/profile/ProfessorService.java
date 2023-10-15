@@ -24,15 +24,16 @@ public class ProfessorService {
         for(GrantedAuthority authority : authorities) {
             currentRole = authority.getAuthority().substring(5);
         }
+        
         return (currentUser.equals(username)) && (currentRole.equals(role));
     }
 
     public Professor getProfessorProfile(String username, String role) {
         if(verifyUser(username, role)) {
             return professorRepository.findByUsername(username)
-                .orElseThrow(() -> new ApiRequestException("Provided Wrong Username"));
+                .orElseThrow(() -> new ApiRequestException("Could not find username in repo"));
         } else {
-            throw new ApiRequestException("Provided Wrong Username");
+            throw new ApiRequestException("Username not in context holder");
         }
     }
     

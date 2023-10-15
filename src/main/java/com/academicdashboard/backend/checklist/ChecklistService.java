@@ -59,6 +59,17 @@ public class ChecklistService {
 
     /*********** CRUD METHODS ***********/
 
+    //Find Checklist By ListId | Returns Checklist
+    public Checklist getChecklist(String username, String listId) {
+        if(verifyUser(username)) {
+            return checklistRepository
+                .findChecklistByListId(listId)
+                .orElseThrow(() -> new ApiRequestException("Provided Wrong ListId"));
+        } else {
+            throw new ApiRequestException("Provided Wrong Username");
+        }
+    }
+
     //Create New Checklist | Returns Checklist Created
     public Checklist createChecklist(String username, String title) {
         if(verifyUser(username)) {
