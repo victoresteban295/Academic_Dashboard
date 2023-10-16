@@ -1,5 +1,6 @@
 package com.academicdashboard.backend.checklist;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -54,14 +55,16 @@ public class CheckpointService {
         return new FindAndModifyOptions().returnNew(returnNew).upsert(upsert);
     }
 
+    public boolean verifyUser(String username) {
+        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+        return currentUser.equals(username);
+    }
 
     /*********** CRUD METHODS ***********/
 
     //Create New Checkpoint Into Existing Checklist | Returns Checklist
     public Checklist addCheckpoint(String username, String listId, String content) {
-        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        if(currentUser.equals(username)) {
+        if(verifyUser(username)) {
             if (mongoTemplate.exists(query("listId", listId), Checklist.class)) {
                 String pointId = publicId(5);
                 Checkpoint checkpoint = checkpointRepository.insert(
@@ -87,9 +90,7 @@ public class CheckpointService {
 
     //Modify Existing Checkpoint | Returns Modified Checkpoint
     public Checkpoint modifyCheckpoint(String username, String pointId, String content) {
-        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        if(currentUser.equals(username)) {
+        if(verifyUser(username)) {
             Checkpoint checkpoint = checkpointRepository
                 .findCheckpointByPointId(pointId)
                 .orElseThrow(() -> new ApiRequestException("Checkpoint You Provided Doesn't Exist"));
@@ -100,12 +101,32 @@ public class CheckpointService {
         }
     }
 
+    //Rearrange Checkpoint's Subcheckpoints || Return Checkpoint
+    public Checkpoint rearrangeSubpoints(
+            String username, 
+            String pointId, 
+            List<Checkpoint> rearrangeSubpoints) {
+        
+        if(verifyUser(username)) {
+            Checkpoint checkpoint = checkpointRepository
+                .findCheckpointByPointId(pointId)
+                .orElseThrow(() -> new ApiRequestException("Provided Wrong pointId"));
+            List<Checkpoint> subpoints = new ArrayList<>();
+            for(Checkpoint rearrangeSubpoint : rearrangeSubpoints) {
+                subpoints.add(checkpointRepository
+                        .findCheckpointByPointId(rearrangeSubpoint.getPointId()).get());
+            }
+            checkpoint.setSubCheckpoints(subpoints);
+            return checkpointRepository.save(checkpoint);
+        } else {
+            throw new ApiRequestException("Provided Wrong Username");
+        }
+    }
+
     //Delete Checkpoint | Void
     //NOTE: Deleteing Checkpoint Automatically Removes its Reference in Checklist
     public void deleteCheckpoint(String username, String pointId) {
-        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        if(currentUser.equals(username)) {
+        if(verifyUser(username)) {
             Checkpoint checkpoint = checkpointRepository
                 .findCheckpointByPointId(pointId)
                 .orElseThrow(() -> new ApiRequestException("Checkpoint You Wanted to Delete Doesn't Exist"));
@@ -127,9 +148,7 @@ public class CheckpointService {
 
     //Existing Checkpoint to Subcheckpoint | Return Checkpoint w/ Subpoints
     public Checkpoint turnIntoSubcheckpoint(String username, String listId, String pointId, String subpointId) {
-        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        if(currentUser.equals(username)) {
+        if(verifyUser(username)) {
             if(mongoTemplate.exists(query("listId", listId), Checklist.class)) {
                 Checkpoint checkpoint = checkpointRepository
                     .findCheckpointByPointId(pointId)
@@ -166,9 +185,7 @@ public class CheckpointService {
     
     //Create New SubCheckpoint under Checkpoint | Return Checkpoint
     public Checkpoint newSubcheckpoint(String username, String pointId, String content) {
-        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        if(currentUser.equals(username)) {
+        if(verifyUser(username)) {
             if(mongoTemplate.exists(query("pointId", pointId), Checkpoint.class)) {
                 //Create New Checkpoint Object as Subcheckpoint
                 String subpointId = publicId(5);
@@ -197,9 +214,7 @@ public class CheckpointService {
 
     //Subcheckpoint to Checkpoint | Return Checklist
     public Checklist reverseSubcheckpoint(String username, String listId, String pointId, String subpointId) {
-        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        if(currentUser.equals(username)) {
+        if(verifyUser(username)) {
             if(mongoTemplate.exists(query("listId", listId), Checklist.class)) {
                 Checkpoint subpoint = checkpointRepository
                     .findCheckpointByPointId(subpointId)
@@ -230,9 +245,7 @@ public class CheckpointService {
 
     //Check off Complete Property on Checkpoint | Return Checkpoint
     public Checkpoint completeCheckpoint(String  username, String pointId) {
-        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        if(currentUser.equals(username)) {
+        if(verifyUser(username)) {
             Query query = query("pointId", pointId);
             Checkpoint checkpoint = Optional.ofNullable(
                     mongoTemplate.findOne(

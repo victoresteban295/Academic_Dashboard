@@ -1,5 +1,6 @@
 package com.academicdashboard.backend.checklist;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
@@ -64,6 +65,21 @@ public class GrouplistController {
                 groupId,
                 payload.get("title")
                 ),
+            HttpStatus.OK);
+    }
+
+    //Rearrange Grouplist's Checklists || Return Checklists
+    @PutMapping("/{username}/rearrange/checklists/{groupId}")
+    public ResponseEntity<Grouplist> rearrangeChecklists(
+            @PathVariable String username, 
+            @PathVariable String groupId, 
+            @RequestBody List<Checklist> checklists) {
+
+        return new ResponseEntity<Grouplist>(
+            grouplistService.rearrangeChecklists(
+                username,
+                groupId,
+                checklists),
             HttpStatus.OK);
     }
 

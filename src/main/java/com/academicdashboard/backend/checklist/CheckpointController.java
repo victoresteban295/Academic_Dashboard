@@ -1,5 +1,6 @@
 package com.academicdashboard.backend.checklist;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
@@ -46,6 +47,21 @@ public class CheckpointController {
                     pointId, 
                     payload.get("content")
                 ),
+                HttpStatus.OK);
+    }
+
+    //Rearrange Checkpoint's Subcheckpoints || Return Checkpoint
+    @PutMapping("/{username}/rearrange/subcheckpoints/{pointId}")
+    public ResponseEntity<Checkpoint> rearrangeSubpoints(
+            @PathVariable String username, 
+            @PathVariable String pointId, 
+            @RequestBody List<Checkpoint> subpoints) {
+
+        return new ResponseEntity<Checkpoint>(
+                checkpointService.rearrangeSubpoints(
+                    username,
+                    pointId,
+                    subpoints),
                 HttpStatus.OK);
     }
 

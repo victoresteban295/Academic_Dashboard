@@ -1,5 +1,6 @@
 package com.academicdashboard.backend.checklist;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,7 @@ public class ChecklistController {
 
     private final ChecklistService checklistService;
 
+    //Get Checklist || Return Checklist
     @GetMapping("/{username}/get/{listId}")
     public ResponseEntity<Checklist> getChecklist(
             @PathVariable String username,
@@ -32,6 +34,21 @@ public class ChecklistController {
                     username,
                     listId 
                 ), 
+                HttpStatus.OK);
+    }
+
+    //Rearrange Checklist's Checkpoint || Returns Checklist
+    @PutMapping("/{username}/rearrange/checkpoints/{listId}")
+    public ResponseEntity<Checklist> rearrangeCheckpoints(
+            @PathVariable String username, 
+            @PathVariable String listId, 
+            @RequestBody List<Checkpoint> checkpoints) {
+
+        return new ResponseEntity<Checklist>(
+                checklistService.rearrangeCheckpoints(
+                    username,
+                    listId,
+                    checkpoints),
                 HttpStatus.OK);
     }
 

@@ -70,6 +70,23 @@ public class ChecklistService {
         }
     }
 
+    //Rearrange Checklist's Checkpoint || Returns Checklist
+    public Checklist rearrangeCheckpoints(String username, String listId, List<Checkpoint> rearrangePoints) {
+        if(verifyUser(username)) {
+            Checklist checklist = checklistRepository
+                .findChecklistByListId(listId)
+                .orElseThrow(() -> new ApiRequestException("Provided Wrong listId"));
+            List<Checkpoint> checkpoints = new ArrayList<>();
+            for(Checkpoint rearrangePoint : rearrangePoints) {
+                checkpoints.add(mongoTemplate.findOne(query("pointId", rearrangePoint.getPointId()), Checkpoint.class));
+            }
+            checklist.setCheckpoints(checkpoints);
+            return checklistRepository.save(checklist);
+        } else {
+            throw new ApiRequestException("Provided Wrong Username");
+        }
+    }
+
     //Create New Checklist | Returns Checklist Created
     public Checklist createChecklist(String username, String title) {
         if(verifyUser(username)) {

@@ -56,13 +56,16 @@ public class GrouplistService {
         return new FindAndModifyOptions().returnNew(returnNew).upsert(upsert);
     }
 
+    private boolean verifyUser(String username) {
+        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+        return currentUser.equals(username);
+    }
+
     /*********** CRUD METHODS ***********/
 
     //Create New Grouplist | Returns Grouplist Created
     public Grouplist createGrouplist(String username, String title) {
-        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        if(currentUser.equals(username)) {
+        if(verifyUser(username)) {
             String groupId = publicId(5);
             Grouplist grouplist = grouplistRepository.insert(
                     Grouplist.builder()
@@ -85,9 +88,7 @@ public class GrouplistService {
 
     //Modify Existing Grouplist | Returns Modified Grouplist
     public Grouplist modifyGrouplist(String username, String groupId, String newTitle) {
-        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        if(currentUser.equals(username)) {
+        if(verifyUser(username)) {
             if(mongoTemplate.exists(query("groupId", groupId), Grouplist.class)) {
                 return mongoTemplate.findAndModify(
                     query("groupId", groupId), 
@@ -104,9 +105,7 @@ public class GrouplistService {
 
     //Add New Checklist to Grouplist | Returns Grouplist
     public Grouplist addNewToGrouplist(String username, String groupId, String listTitle) {
-        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        if(currentUser.equals(username)) {
+        if(verifyUser(username)) {
             String listId = publicId(5);
             Checklist checklist = mongoTemplate.insert(
                     Checklist.builder()
@@ -130,11 +129,26 @@ public class GrouplistService {
         }
     }
 
+    //Rearrange Grouplist's Checklists || Return Checklists
+    public Grouplist rearrangeChecklists(String username, String groupId, List<Checklist> rearrangelists) {
+        if(verifyUser(username)) {
+            Grouplist grouplist = grouplistRepository
+                .findGrouplistByGroupId(groupId)
+                .orElseThrow(() -> new ApiRequestException("Provided Wrong GroupId"));
+            List<Checklist> checklists = new ArrayList<>();
+            for(Checklist rearrangeList : rearrangelists) {
+                checklists.add(mongoTemplate.findOne(query("listId", rearrangeList.getListId()), Checklist.class)); 
+            }
+            grouplist.setChecklists(checklists);
+            return grouplistRepository.save(grouplist);
+        } else {
+            throw new ApiRequestException("Wrong Username Provided");
+        }
+    }
+
     //Add Existing Checklist to Grouplist | Returns Grouplist
     public Grouplist addExistToGrouplist(String username, String groupId, String listId) {
-        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        if(currentUser.equals(username)) {
+        if(verifyUser(username)) {
             //Find Existing Checklist
             Checklist checklist = Optional.ofNullable(
                     mongoTemplate.findOne(
@@ -164,9 +178,7 @@ public class GrouplistService {
 
     //Remove Existing Checklist From Grouplist | Returns Modified Grouplist
     public Grouplist removefromGrouplist(String username, String groupId, String listId) {
-        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        if(currentUser.equals(username)) {
+        if(verifyUser(username)) {
             if(mongoTemplate.exists(query("username", username), User.class)) {
                 //Find Existing Checklist
                 Checklist checklist = Optional.ofNullable(
@@ -200,9 +212,7 @@ public class GrouplistService {
 
     //Delete Grouplist | Void
     public void deleteGrouplist(String username, String groupId, boolean deleteAll) {
-        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        if(currentUser.equals(username)) {
+        if(verifyUser(username)) {
             Grouplist grouplist = Optional.ofNullable(
                     mongoTemplate.findOne(
                         query("groupId", groupId), 
