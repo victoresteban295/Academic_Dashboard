@@ -2,6 +2,7 @@ package com.academicdashboard.backend.user;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -60,12 +61,28 @@ public class UserService {
     /* ********** Checklist ********** */
     /***********************************/
 
-    public List<Checklist> getChecklists(String username) {
+    // public List<Checklist> getChecklists(String username) {
+    //     if(verifyUser(username)) {
+    //         return userRepository
+    //             .findUserByUsername(username)
+    //             .get()
+    //             .getChecklists();
+    //     } else {
+    //         throw new ApiRequestException("Wrong Username Provided");
+    //     }
+    // }
+
+    public List<String> getChecklists(String username) {
         if(verifyUser(username)) {
-            return userRepository
+            List<Checklist> checklists = userRepository
                 .findUserByUsername(username)
                 .get()
                 .getChecklists();
+
+            return checklists
+                .stream()
+                .map(checklist -> checklist.getListId())
+                .collect(Collectors.toList());
         } else {
             throw new ApiRequestException("Wrong Username Provided");
         }

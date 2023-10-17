@@ -37,9 +37,16 @@ public class UserController {
     /* ********** Checklist ********** */
     /***********************************/
 
+    // @GetMapping("/{username}/get/checklists")
+    // public ResponseEntity<List<Checklist>> getChecklists(@PathVariable String username) {
+    //     return new ResponseEntity<List<Checklist>>(
+    //             userService.getChecklists(username),
+    //             HttpStatus.OK);
+    // }
+
     @GetMapping("/{username}/get/checklists")
-    public ResponseEntity<List<Checklist>> getChecklists(@PathVariable String username) {
-        return new ResponseEntity<List<Checklist>>(
+    public ResponseEntity<List<String>> getChecklists(@PathVariable String username) {
+        return new ResponseEntity<List<String>>(
                 userService.getChecklists(username),
                 HttpStatus.OK);
     }
