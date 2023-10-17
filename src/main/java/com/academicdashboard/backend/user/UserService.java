@@ -61,28 +61,51 @@ public class UserService {
     /* ********** Checklist ********** */
     /***********************************/
 
-    // public List<Checklist> getChecklists(String username) {
-    //     if(verifyUser(username)) {
-    //         return userRepository
-    //             .findUserByUsername(username)
-    //             .get()
-    //             .getChecklists();
-    //     } else {
-    //         throw new ApiRequestException("Wrong Username Provided");
-    //     }
-    // }
-
-    public List<String> getChecklists(String username) {
+    //Get All User's Checklist || Return Checklists
+    public List<Checklist> getChecklists(String username) {
         if(verifyUser(username)) {
             List<Checklist> checklists = userRepository
                 .findUserByUsername(username)
                 .get()
                 .getChecklists();
+            List<Grouplist> grouplists = userRepository
+                .findUserByUsername(username)
+                .get()
+                .getGrouplists();
+            for(Grouplist grouplist : grouplists) {
+                List<Checklist> lists = grouplist.getChecklists();
+                for(Checklist list : lists) {
+                    checklists.add(list);
+                }
+            }
+            return checklists;
+        } else {
+            throw new ApiRequestException("Wrong Username Provided");
+        }
+    }
 
-            return checklists
-                .stream()
-                .map(checklist -> checklist.getListId())
-                .collect(Collectors.toList());
+    //Get User's Checklist's Ids || Returns a List of Checklists's Ids
+    public List<String> getListIds(String username) {
+        if(verifyUser(username)) {
+            List<String> listIds = new ArrayList<>();
+            List<Checklist> checklists = userRepository
+                .findUserByUsername(username)
+                .get()
+                .getChecklists();
+            for(Checklist checklist : checklists) {
+                listIds.add(checklist.getListId());
+            }
+            List<Grouplist> grouplists = userRepository
+                .findUserByUsername(username)
+                .get()
+                .getGrouplists();
+            for(Grouplist grouplist : grouplists) {
+                List<Checklist> lists = grouplist.getChecklists();
+                for(Checklist list : lists) {
+                    listIds.add(list.getListId());
+                }
+            }
+            return listIds;
         } else {
             throw new ApiRequestException("Wrong Username Provided");
         }
