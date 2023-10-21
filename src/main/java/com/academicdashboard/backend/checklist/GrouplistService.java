@@ -1,14 +1,10 @@
 package com.academicdashboard.backend.checklist;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 
-import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -22,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class GrouplistService {
-
     private final GrouplistRepository grouplistRepository;
     private final MongoTemplate mongoTemplate;
 
@@ -33,217 +28,54 @@ public class GrouplistService {
         return NanoIdUtils.randomNanoId(random, alphabet, size); //Create New Public Id
     }
 
-    /*********** QUERY DEFINITION METHOD ***********/
-    private static Query query(String field, String equalsValue) {
-        return new Query().addCriteria(Criteria.where(field).is(equalsValue));
-    } 
-
-    /*********** UPDATE DEFINITION METHODS ***********/
-    private static Update setUpdate(String field, String value) {
-        return new Update().set(field, value);
-    }
-
-    private static Update pushUpdate(String field, Checklist checklist) {
-        return new Update().push(field).value(checklist);
-    }
-
-    private static Update pullUpdate(String field, Checklist checklist) {
-        return new Update().pull(field, checklist); 
-    }
-
-    /*********** OPTION DEFINITION METHOD ***********/
-    private static FindAndModifyOptions options(boolean returnNew, boolean upsert) {
-        return new FindAndModifyOptions().returnNew(returnNew).upsert(upsert);
-    }
-
+    //Verify Username Matches Logged-in User
     private boolean verifyUser(String username) {
         String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
         return currentUser.equals(username);
     }
 
+    /************************************/
     /*********** CRUD METHODS ***********/
+    /************************************/
 
     //Create New Grouplist | Returns Grouplist Created
     public Grouplist createGrouplist(String username, String title) {
         if(verifyUser(username)) {
-            String groupId = publicId(5);
+            String groupId = publicId(10); //Create Grouplist's grouId
+            //Create Grouplist
             Grouplist grouplist = grouplistRepository.insert(
                     Grouplist.builder()
                     .groupId(groupId)
                     .title(title)
                     .checklists(new ArrayList<>())
-                    .build()
-                    );
+                    .build());
 
+            //Add New Grouplist to User
             mongoTemplate.update(User.class)
                 .matching(Criteria.where("username").is(username))
-                .apply(new Update().push("grouplists").value(grouplist))
-                .first();
+                .apply(new Update().push("grouplists").value(grouplist));
 
             return grouplist;
         } else {
-            throw new ApiRequestException("Provided Wrong Username");
+            throw new ApiRequestException("Username Not Found");
         }
     }
 
-    //Modify Existing Grouplist | Returns Modified Grouplist
-    public Grouplist modifyGrouplist(String username, String groupId, String newTitle) {
-        if(verifyUser(username)) {
-            if(mongoTemplate.exists(query("groupId", groupId), Grouplist.class)) {
-                return mongoTemplate.findAndModify(
-                    query("groupId", groupId), 
-                    setUpdate("title", newTitle), 
-                    options(true, true), 
-                    Grouplist.class);
-            } else {
-                throw new ApiRequestException("Grouplist You Wanted to Modify Doesn't Exist");
-            }
+    //Modify Grouplist || Return Modified Grouplist
+    public Grouplist modifyGrouplist(String username, Grouplist modifiedGrouplist) {
+        if(verifyUser(username)){
+            return grouplistRepository.save(modifiedGrouplist);
         } else {
-            throw new ApiRequestException("Provided Wrong Username");
+            throw new ApiRequestException("Username Not Found");
         }
     }
 
-    //Add New Checklist to Grouplist | Returns Grouplist
-    public Grouplist addNewToGrouplist(String username, String groupId, String listTitle) {
+    //Delete Grouplist || Void
+    public void deleteGrouplist(String username, String groupId) {
         if(verifyUser(username)) {
-            String listId = publicId(5);
-            Checklist checklist = mongoTemplate.insert(
-                    Checklist.builder()
-                    .listId(listId)
-                    .title(listTitle)
-                    .checkpoints(new ArrayList<>())
-                    .build()
-                    );
-
-            if(mongoTemplate.exists(query("groupId", groupId), Grouplist.class)) {
-                return mongoTemplate.findAndModify(
-                    query("groupId", groupId), 
-                    pushUpdate("checklists", checklist), 
-                    options(true, true), 
-                    Grouplist.class);
-            } else {
-                throw new ApiRequestException("Grouplist You Wanted to Modify Doesn't Exist");
-            }
+            grouplistRepository.deleteGrouplistByGroupId(groupId);
         } else {
-            throw new ApiRequestException("Provided Wrong Username");
-        }
-    }
-
-    //Rearrange Grouplist's Checklists || Return Checklists
-    public Grouplist rearrangeChecklists(String username, String groupId, List<Checklist> rearrangelists) {
-        if(verifyUser(username)) {
-            Grouplist grouplist = grouplistRepository
-                .findGrouplistByGroupId(groupId)
-                .orElseThrow(() -> new ApiRequestException("Provided Wrong GroupId"));
-            List<Checklist> checklists = new ArrayList<>();
-            for(Checklist rearrangeList : rearrangelists) {
-                checklists.add(mongoTemplate.findOne(query("listId", rearrangeList.getListId()), Checklist.class)); 
-            }
-            grouplist.setChecklists(checklists);
-            return grouplistRepository.save(grouplist);
-        } else {
-            throw new ApiRequestException("Wrong Username Provided");
-        }
-    }
-
-    //Add Existing Checklist to Grouplist | Returns Grouplist
-    public Grouplist addExistToGrouplist(String username, String groupId, String listId) {
-        if(verifyUser(username)) {
-            //Find Existing Checklist
-            Checklist checklist = Optional.ofNullable(
-                    mongoTemplate.findOne(
-                        query("listId", listId), 
-                        Checklist.class))
-                .orElseThrow(() -> new ApiRequestException("Checklist You Wanted to Modify Doesn't Exist"));
-
-            //Remove Checklist Obj Reference from the User's checklists attribute
-            mongoTemplate.findAndModify(
-                    query("username", username), 
-                    pullUpdate("checklists", checklist), 
-                    User.class);
-
-            if(mongoTemplate.exists(query("groupId", groupId), Grouplist.class)) {
-                return mongoTemplate.findAndModify(
-                    query("groupId", groupId), 
-                    pushUpdate("checklists", checklist), 
-                    options(true, true), 
-                    Grouplist.class);
-            } else {
-                throw new ApiRequestException("Grouplist You Wanted to Modify Doesn't Exist");
-            }
-        } else {
-            throw new ApiRequestException("Provided Wrong Username");
-        }
-    }
-
-    //Remove Existing Checklist From Grouplist | Returns Modified Grouplist
-    public Grouplist removefromGrouplist(String username, String groupId, String listId) {
-        if(verifyUser(username)) {
-            if(mongoTemplate.exists(query("username", username), User.class)) {
-                //Find Existing Checklist
-                Checklist checklist = Optional.ofNullable(
-                        mongoTemplate.findOne(
-                            query("listId", listId), 
-                            Checklist.class))
-                    .orElseThrow(() -> new ApiRequestException("Checklist You Wanted to Modify Doesn't Exist"));
-
-                if(mongoTemplate.exists(query("groupId", groupId), Grouplist.class)) {
-                    //Add Checklist Obj Reference back to User's checklists attribute
-                    mongoTemplate.findAndModify(
-                            query("username", username), 
-                            pushUpdate("checklists", checklist), 
-                            User.class);
-
-                    return mongoTemplate.findAndModify(
-                        query("groupId", groupId), 
-                        pullUpdate("checklists", checklist), 
-                        options(true, true), 
-                        Grouplist.class);
-                } else {
-                    throw new ApiRequestException("Grouplist You Wanted to Modify Doesn't Exist");
-                }
-            } else {
-                throw new ApiRequestException("User Not Found");
-            }
-        } else {
-            throw new ApiRequestException("Provided Wrong Username");
-        }
-    }
-
-    //Delete Grouplist | Void
-    public void deleteGrouplist(String username, String groupId, boolean deleteAll) {
-        if(verifyUser(username)) {
-            Grouplist grouplist = Optional.ofNullable(
-                    mongoTemplate.findOne(
-                        query("groupId", groupId), 
-                        Grouplist.class))
-                .orElseThrow(() -> new ApiRequestException("Grouplist You Wanted to Delete Doesn't Exist"));
-
-            List<Checklist> checklists = grouplist.getChecklists(); //Checklist Under Grouplist
-
-            if (deleteAll) {
-                //Deleting Completely All Checklist Found within Deleted Grouplist
-                for(Checklist list : checklists) {
-                    mongoTemplate.remove(
-                            query("listId", list.getListId()), 
-                            Checklist.class);
-                }
-            } else {
-                //Move Checklist Found within Deleted Grouplist to User's Checklists attribute
-                for(Checklist list : checklists) {
-                    mongoTemplate.findAndModify(
-                            query("username", username), 
-                            pushUpdate("checklists", list), 
-                            User.class);
-                }
-            }
-
-            //Delete Grouplist
-            mongoTemplate.remove(
-                    query("groupId", groupId), 
-                    Grouplist.class);
-        } else {
-            throw new ApiRequestException("Provided Wrong Username");
+            throw new ApiRequestException("Username Not Found");
         }
     }
 }

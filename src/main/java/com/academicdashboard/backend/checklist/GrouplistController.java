@@ -1,6 +1,5 @@
 package com.academicdashboard.backend.checklist;
 
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
@@ -19,110 +18,40 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/grouplist")
 @RequiredArgsConstructor
 public class GrouplistController {
-
     private final GrouplistService grouplistService;
 
     //Create New Grouplist | Returns Grouplist Created
-    @PostMapping("{username}/new")
+    @PostMapping("/{username}/new")
     public ResponseEntity<Grouplist> createGrouplist(
-            @RequestBody Map<String, String> payload,
-            @PathVariable String username) {
-
+            @PathVariable String username, 
+            @RequestBody Map<String, String> payload) {
         return new ResponseEntity<Grouplist>(
-            grouplistService.createGrouplist(
-                username,
-                payload.get("title")
-            ),
-            HttpStatus.CREATED);
-    }
+                grouplistService.createGrouplist(
+                    username, 
+                    payload.get("title")), 
+                HttpStatus.CREATED);
+    } 
 
-    //Modify Existing Grouplist | Returns Modified Grouplist
-    @PutMapping("/{username}/modify/{groupId}")
+    //Modify Grouplist || Return Modified Grouplist
+    @PutMapping("/{username}/modify")
     public ResponseEntity<Grouplist> modifyGrouplist(
-            @RequestBody Map<String, String> payload,
-            @PathVariable String username,
-            @PathVariable String groupId) {
+            @PathVariable String username, 
+            @RequestBody Grouplist grouplist) {
 
         return new ResponseEntity<Grouplist>(
-            grouplistService.modifyGrouplist(
-                    username,
-                    groupId,
-                    payload.get("title")
-                ),
+                grouplistService.modifyGrouplist(
+                    username, 
+                    grouplist), 
                 HttpStatus.OK);
     }
 
-    //Add New Checklist to Grouplist | Returns Grouplist
-    @PutMapping("/{username}/addnew/{groupId}")
-    public ResponseEntity<Grouplist> addNewToGrouplist(
-            @RequestBody Map<String, String> payload,
-            @PathVariable String username,
-            @PathVariable String groupId) {
-
-        return new ResponseEntity<Grouplist>(
-            grouplistService.addNewToGrouplist(
-                username,
-                groupId,
-                payload.get("title")
-                ),
-            HttpStatus.OK);
-    }
-
-    //Rearrange Grouplist's Checklists || Return Checklists
-    @PutMapping("/{username}/rearrange/checklists/{groupId}")
-    public ResponseEntity<Grouplist> rearrangeChecklists(
-            @PathVariable String username, 
-            @PathVariable String groupId, 
-            @RequestBody List<Checklist> checklists) {
-
-        return new ResponseEntity<Grouplist>(
-            grouplistService.rearrangeChecklists(
-                username,
-                groupId,
-                checklists),
-            HttpStatus.OK);
-    }
-
-    //Add Existing Checklist to Grouplist | Returns Grouplist
-    @PutMapping("/{username}/addexist")
-    public ResponseEntity<Grouplist> addExistToGrouplist(
-            @RequestBody Map<String, String> payload,
-            @PathVariable String username) {
-
-        return new ResponseEntity<Grouplist>(
-            grouplistService.addExistToGrouplist(
-                username, 
-                payload.get("groupId"), 
-                payload.get("listId")
-            ),
-            HttpStatus.OK);
-    }
-
-    //Remove Existing Checklist From Grouplist | Returns Modified Grouplist
-    @PutMapping("/{username}/removefrom")
-    public ResponseEntity<Grouplist> removefromGrouplist(
-            @RequestBody Map<String, String> payload,
-            @PathVariable String username) {
-
-        return new ResponseEntity<Grouplist>(
-            grouplistService.removefromGrouplist(
-                username, 
-                payload.get("groupId"), 
-                payload.get("listId")
-            ),
-            HttpStatus.OK);
-    }
-
-    record Condition(String groupId, boolean deleteAll){}
-
-    //Delete Grouplist | Void
-    @DeleteMapping("{username}/delete")
+    //Delete Grouplist || Void
+    @DeleteMapping("/{userame}/delete/{listId}")
     public ResponseEntity<Void> deleteGrouplist(
-            @RequestBody Condition condition, 
-            @PathVariable String username) {
+            @PathVariable String username, 
+            @PathVariable String listId) {
 
-        grouplistService.deleteGrouplist(username, condition.groupId(), condition.deleteAll());
+        grouplistService.deleteGrouplist(username, listId);
         return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
     }
-
 }
