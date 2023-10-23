@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.academicdashboard.backend.checklist.Checklist;
 import com.academicdashboard.backend.checklist.Grouplist;
-import com.academicdashboard.backend.checklist.RefList;
 
 import lombok.RequiredArgsConstructor;
 
@@ -37,53 +37,59 @@ public class UserController {
     /* ********** Checklist ********** */
     /***********************************/
 
-    //Get All User's Checklist || Return Checklists
+    //Get User's Checklists || Return List<Checklist>
     @GetMapping("/{username}/get/checklists")
-    public ResponseEntity<List<RefList>> getUserChecklists(@PathVariable String username) {
-        return new ResponseEntity<List<RefList>>(
-                userService.getUserChecklists(username),
+    public ResponseEntity<List<Checklist>> getChecklists(
+            @PathVariable String username) {
+
+        return new ResponseEntity<List<Checklist>>(
+                userService.getChecklists(username),
                 HttpStatus.OK);
     }
 
-    //Get User's Grouplist || Return Grouplist
+    //Get User's Grouplists || Return List<Grouplist> 
     @GetMapping("/{username}/get/grouplists")
-    public ResponseEntity<List<Grouplist>> getUserGrouplists(@PathVariable String username) {
-        return new ResponseEntity<List<Grouplist>>(
-                userService.getUserGrouplists(username),
-                HttpStatus.OK);
-    }
-
-    //Determine If User Has Checklists || Returns First ListId
-    @GetMapping("/{username}/get/first/checklist")
-    public ResponseEntity<String> getUserFirstChecklists(@PathVariable String username) {
-        return new ResponseEntity<String>(
-                userService.getUserFirstCheclist(username),
-                HttpStatus.OK);
-    }
-
-    //Modify/Rearrange User's Checklists || Returns Checklists
-    @PutMapping("/{username}/rearrange/checklist") 
-    public ResponseEntity<List<RefList>> modifyUserChecklists(
-            @PathVariable String username, 
-            @RequestBody List<RefList> checklists) {
-
-        return new ResponseEntity<List<RefList>>(
-                userService.modifyUserChecklists(
-                    username, 
-                    checklists), 
-                HttpStatus.OK);
-    }
-
-    //Modify/Rearrange User's Grouplists || Returns Grouplists
-    @PutMapping("/{username}/rearrange/grouplist") 
-    public ResponseEntity<List<Grouplist>> rearrangeGrouplists(
-            @PathVariable String username, 
-            @RequestBody List<Grouplist> grouplists) {
+    public ResponseEntity<List<Grouplist>> getGrouplists(
+            @PathVariable String username) {
 
         return new ResponseEntity<List<Grouplist>>(
-                userService.modifyGrouplists(
+                userService.getGrouplists(username),
+                HttpStatus.OK);
+    }
+
+    //Get All User's Checklists || Return List<Checklist>
+    @GetMapping("/{username}/get/all/checklists")
+    public ResponseEntity<List<Checklist>> getAllChecklists(
+            @PathVariable String username) {
+
+        return new ResponseEntity<List<Checklist>>(
+                userService.getAllChecklists(username),
+                HttpStatus.OK);
+    }
+
+    //Reorder User's Checklists || Return List<Checklist> 
+    @PutMapping("/{username}/reorder/checklists") 
+    public ResponseEntity<List<Checklist>> reorderChecklists(
+            @PathVariable String username, 
+            @RequestBody List<Checklist> reorderChecklists) {
+
+        return new ResponseEntity<List<Checklist>>(
+                userService.reorderChecklists(
                     username, 
-                    grouplists), 
+                    reorderChecklists), 
+                HttpStatus.OK);
+    }
+
+    //Reorder User's Grouplists || Return List<Grouplist>
+    @PutMapping("/{username}/reorder/grouplists") 
+    public ResponseEntity<List<Grouplist>> reorderGrouplists(
+            @PathVariable String username, 
+            @RequestBody List<Grouplist> reorderGrouplists) {
+
+        return new ResponseEntity<List<Grouplist>>(
+                userService.reorderGrouplists(
+                    username, 
+                    reorderGrouplists), 
                 HttpStatus.OK);
     }
 

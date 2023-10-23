@@ -24,5 +24,5 @@ public class Grouplist {
     //Grouplist's Details
     private String groupId;
     private String title;
-    private List<RefList> checklists;
+    private List<Checklist> checklists;
 }

@@ -9,10 +9,11 @@ import org.springframework.stereotype.Service;
 // import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+
+import com.academicdashboard.backend.checklist.Checklist;
 // import org.springframework.data.mongodb.core.query.Update;
 // import com.academicdashboard.backend.checklist.Checklist;
 import com.academicdashboard.backend.checklist.Grouplist;
-import com.academicdashboard.backend.checklist.RefList;
 import com.academicdashboard.backend.exception.ApiRequestException;
 
 import lombok.RequiredArgsConstructor;
@@ -60,91 +61,95 @@ public class UserService {
     /* ********** Checklist ********** */
     /***********************************/
 
-    //Get User's Checklist || Return Checklists
-    public List<RefList> getUserChecklists(String username) {
+    //Get User's Checklists || Return List<Checklist>
+    public List<Checklist> getChecklists(String username) {
         if(verifyUser(username)) {
-            List<RefList> checklists = userRepository
-                .findUserByUsername(username)
-                .get()
-                .getChecklists();
-            return checklists;
+            return userRepository.findUserByUsername(username)
+                .get().getChecklists();
         } else {
             throw new ApiRequestException("User Not Found");
         }
     }
 
-    //Get User's Grouplist || Return Grouplist
-    public List<Grouplist> getUserGrouplists(String username) {
+    //Get User's Grouplists || Return List<Grouplist> 
+    public List<Grouplist> getGrouplists(String username) {
         if(verifyUser(username)) {
-            return userRepository
-                .findUserByUsername(username)
-                .get()
-                .getGrouplists();
+            return userRepository.findUserByUsername(username)
+                .get().getGrouplists();
         } else {
             throw new ApiRequestException("User Not Found");
         }
     }
 
-    //Determine If User Has Checklists || Returns First ListId
-    public String getUserFirstCheclist(String username) {
+    //Get All User's Checklists || Return List<Checklist>
+    public List<Checklist> getAllChecklists(String username) {
         if(verifyUser(username)) {
-            //Find User By Username
             User user = userRepository
                 .findUserByUsername(username)
                 .orElseThrow(() -> new ApiRequestException("User Not Found"));
+            List<Checklist> allChecklists = user.getChecklists(); //Get All User's Checklists
+            List<Grouplist> grouplists = user.getGrouplists(); //Get All User's Grouplists
 
-            //Get User's Checlists and Grouplist
-            List<RefList> checklists = user.getChecklists();
-            List<Grouplist> grouplists = user.getGrouplists();
-
-            //If Found, Returns First listId in User's Checklist
-            if(checklists.size() > 0) {
-                return checklists.get(0).getListId();
-
-            //Else, Returns First listId it Encounters in User's Grouplist
-            } else if(grouplists.size() > 0){
-                for(Grouplist grouplist : grouplists) {
-                    List<RefList> lists = grouplist.getChecklists();
-                    if(lists.size() > 0) {
-                        return lists.get(0).getListId();
-                    }
+            //Attach All Grouped Checklist to allChecklists
+            for(Grouplist grouplist : grouplists) {
+                List<Checklist> checklists = grouplist.getChecklists();
+                for(Checklist checklist : checklists) {
+                    allChecklists.add(checklist);
                 }
-            } 
-            return ""; //User Has No Checklist
+            }
+            return allChecklists; //All User's Checklists
         } else {
             throw new ApiRequestException("User Not Found");
         }
     }
 
-    //Modify/Rearrange User's Checklists || Returns Checklists
-    public List<RefList> modifyUserChecklists(String username, List<RefList> checklists) {
+    //Reorder User's Checklists || Return List<Checklist> 
+    public List<Checklist> reorderChecklists(String username, List<Checklist> reorderChecklists) {
         if(verifyUser(username)) {
+            //Find User & Update Checklist
             User user = userRepository
                 .findUserByUsername(username)
                 .orElseThrow(() -> new ApiRequestException("User Not Found"));
-            user.setChecklists(checklists); //Set Checklist's Modifications
-            userRepository.save(user); //Save User with Updated Checklists
+
+            //Reorder Checklists
+            List<Checklist> checklists = new ArrayList<>(); //Updated Checklists
+            for(Checklist checklist : reorderChecklists) {
+                checklists.add(mongoTemplate.findOne(
+                            query("listId", checklist.getListId()), 
+                            Checklist.class)); 
+            }
+
+            //Update & Save User with Updated Checklist
+            user.setChecklists(checklists); 
+            userRepository.save(user); 
             return user.getChecklists(); 
         } else {
             throw new ApiRequestException("User Not Found");
         }
     }
 
-    //Modify/Rearrange User's Grouplists || Returns Grouplists
-    public List<Grouplist> modifyGrouplists(String username, List<Grouplist> rearrangeGroups) {
+    //Reorder User's Grouplists || Return List<Grouplist>
+    public List<Grouplist> reorderGrouplists(String username, List<Grouplist> reorderGrouplists) {
         if(verifyUser(username)) {
+            //Find User & Update Grouplist
             User user = userRepository
                 .findUserByUsername(username)
-                .orElseThrow(() -> new ApiRequestException("Provided Wrong Username"));
-            List<Grouplist> grouplists = new ArrayList<>();
-            for(Grouplist rearrangeGroup : rearrangeGroups) {
-                grouplists.add(mongoTemplate.findOne(query("groupId", rearrangeGroup.getGroupId()), Grouplist.class)); 
+                .orElseThrow(() -> new ApiRequestException("User Not Found"));
+
+            //Reorder Grouplists
+            List<Grouplist> grouplists = new ArrayList<>(); //Updated Grouplists
+            for(Grouplist grouplist : reorderGrouplists) {
+                grouplists.add(mongoTemplate.findOne(
+                            query("groupId", grouplist.getGroupId()), 
+                            Grouplist.class)); 
             }
-            user.setGrouplists(grouplists); //Update User's Checklists
-            userRepository.save(user); //Save User with Updated Checklists
+
+            //Update & Save User with Updated Grouplist
+            user.setGrouplists(grouplists); 
+            userRepository.save(user); 
             return user.getGrouplists(); 
         } else {
-            throw new ApiRequestException("Wrong Username Provided");
+            throw new ApiRequestException("User Not Found");
         }
     }
 

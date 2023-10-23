@@ -1,6 +1,7 @@
 package com.academicdashboard.backend.checklist;
 
 import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;

@@ -1,6 +1,7 @@
 package com.academicdashboard.backend.checklist;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
@@ -39,49 +40,65 @@ public class ChecklistService {
     /************************************/
 
     //Find Checklist By ListId || Returns Checklist
-    public Checklist getChecklist(String username, String listId) {
-        if(verifyUser(username)) {
-            return checklistRepository
-                .findChecklistByListId(listId)
-                .orElseThrow(() -> new ApiRequestException("Checklist Not Found"));
-        } else {
-            throw new ApiRequestException("Username Not Found");
-        }
-    }
+    // public Checklist getChecklist(String username, String listId) {
+    //     if(verifyUser(username)) {
+    //         return checklistRepository
+    //             .findChecklistByListId(listId)
+    //             .orElseThrow(() -> new ApiRequestException("Checklist Not Found"));
+    //     } else {
+    //         throw new ApiRequestException("Username Not Found");
+    //     }
+    // }
 
     //Create New Checklist || Returns Checklist
     public Checklist createChecklist(String username, String title) {
         if(verifyUser(username)) {
-            String listId = publicId(10);
+            //Create & Save Checklist
             Checklist checklist = checklistRepository
-                .insert(
-                        Checklist.builder()
-                            .listId(listId)
-                            .title(title)
-                            .checkpoints(new ArrayList<>())
-                            .build());
+                .insert(Checklist.builder()
+                        .listId(publicId(10))
+                        .title(title)
+                        .checkpoints(new ArrayList<>())
+                        .build());
 
-            //Checklist Reference Stored in User
-            RefList refList = RefList.builder()
-                .title(title)
-                .listId(listId)
-                .build();
-
+            //Save Checklist in User's 'checklists' attribute
             mongoTemplate.findAndModify(
                     new Query().addCriteria(Criteria.where("username").is(username)),
-                    new Update().set("checklists", refList),
+                    new Update().push("checklists", checklist),
                     new FindAndModifyOptions().returnNew(true).upsert(true),
                     User.class);
             return checklist;
         } else {
-            throw new ApiRequestException("Provided Wrong Username");
+            throw new ApiRequestException("User Not Found");
         }
     }
 
-    //Modify Checklist || Return Modified Checklist
-    public Checklist modifyChecklist(String username, Checklist modifyChecklist) {
+    //Modify Checklist's Title || Returns Modified Checklist
+    public Checklist modifyTitle(String username, String listId, String title) {
         if(verifyUser(username)) {
-            return checklistRepository.save(modifyChecklist);
+            //Find Checklist to Update
+            Checklist checklist = checklistRepository
+                .findChecklistByListId(listId)
+                .orElseThrow(() -> new ApiRequestException("Checklist Not Found"));
+            checklist.setTitle(title); //Modify Title
+            return checklistRepository.save(checklist); //Save Modified Checklist
+        } else {
+            throw new ApiRequestException("User Not Found");
+        }
+    }
+
+    //Modify Checklist's Checkpoints || Returns Modified Checklist
+    //  * Use to add checkpoints
+    //  * Use to remove checkpoints
+    //  * Use to reorder checkpoints
+    public Checklist modifyCheckpoints(String username, String listId, List<Checkpoint> checkpoints) {
+        if(verifyUser(username)) {
+            //Find Checklist to Update
+            Checklist checklist = checklistRepository
+                .findChecklistByListId(listId)
+                .orElseThrow(() -> new ApiRequestException("Checklist Not Found"));
+            checklist.setCheckpoints(checkpoints); //Update Checkpoints
+            return checklistRepository.save(checklist); //Save Modified Checklist
         } else {
             throw new ApiRequestException("Username Not Found");
         }
@@ -90,7 +107,7 @@ public class ChecklistService {
     //Delete Checklist || Void
     public void deleteChecklist(String username, String listId) {
         if(verifyUser(username)) {
-            checklistRepository.deleteChecklistByListId(listId);
+            checklistRepository.deleteChecklistByListId(listId); //Delete Checklist
         } else {
             throw new ApiRequestException("Username Not Found");
         }

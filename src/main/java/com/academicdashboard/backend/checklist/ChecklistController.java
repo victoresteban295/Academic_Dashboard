@@ -1,11 +1,11 @@
 package com.academicdashboard.backend.checklist;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -21,15 +21,15 @@ public class ChecklistController {
     private final ChecklistService checklistService;
 
     //Get Checklist By ListId || Return Checklist
-    @GetMapping("/{username}/get/{listId}")
-    public ResponseEntity<Checklist> getChecklist(
-            @PathVariable String username, 
-            @PathVariable String listId) {
-
-        return new ResponseEntity<Checklist>(
-                checklistService.getChecklist(username, listId), 
-                HttpStatus.OK);
-    }
+    // @GetMapping("/{username}/get/{listId}")
+    // public ResponseEntity<Checklist> getChecklist(
+    //         @PathVariable String username, 
+    //         @PathVariable String listId) {
+    //
+    //     return new ResponseEntity<Checklist>(
+    //             checklistService.getChecklist(username, listId), 
+    //             HttpStatus.OK);
+    // }
 
     //Create New Checklist || Returns Checklist
     @PostMapping("/{username}/new")
@@ -44,13 +44,36 @@ public class ChecklistController {
                 HttpStatus.CREATED);
     }
 
-    //Modify Checklist || Return Modified Checklist
-    @PutMapping("/{username}/modify")
-    public ResponseEntity<Checklist> modifyChecklist(
+    //Modify Checklist's Title || Returns Modified Checklist
+    @PutMapping("/{username}/modify/title/{listId}")
+    public ResponseEntity<Checklist> modifyTitle(
             @PathVariable String username, 
-            @RequestBody Checklist checklist) {
+            @PathVariable String listId, 
+            @RequestBody Map<String, String> payload) {
+
         return new ResponseEntity<Checklist>(
-                checklistService.modifyChecklist(username, checklist),
+                checklistService.modifyTitle(
+                    username, 
+                    listId,
+                    payload.get("title")), 
+                HttpStatus.OK);
+    }
+
+    //Modify Checklist's Checkpoints || Returns Modified Checklist
+    //  * Use to add checkpoints
+    //  * Use to remove checkpoints
+    //  * Use to reorder checkpoints
+    @PutMapping("/{username}/modify/checkpoints/{listId}")
+    public ResponseEntity<Checklist> modifyCheckpoints(
+            @PathVariable String username, 
+            @PathVariable String listId, 
+            @RequestBody List<Checkpoint> checkpoints) {
+
+        return new ResponseEntity<Checklist>(
+                checklistService.modifyCheckpoints(
+                    username, 
+                    listId,
+                    checkpoints),
                 HttpStatus.OK);
     }
 

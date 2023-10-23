@@ -13,8 +13,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.academicdashboard.backend.calendar.Calendar;
+import com.academicdashboard.backend.checklist.Checklist;
 import com.academicdashboard.backend.checklist.Grouplist;
-import com.academicdashboard.backend.checklist.RefList;
 import com.academicdashboard.backend.course.Course;
 import com.academicdashboard.backend.profile.Profile;
 import com.academicdashboard.backend.reminder.ReminderList;
@@ -70,7 +70,8 @@ public class User implements UserDetails {
     @DocumentReference
     private List<Calendar> calendars;
 
-    private List<RefList> checklists;
+    @DocumentReference
+    private List<Checklist> checklists;
 
     @DocumentReference
     private List<Grouplist> grouplists;
