@@ -17,6 +17,7 @@ public class Checkpoint {
     
     String content;
     List<Checkpoint> subpoints;
+    List<Checkpoint> completedSubpoints;
 
     @JsonProperty(value = "isComplete")
     boolean isComplete;

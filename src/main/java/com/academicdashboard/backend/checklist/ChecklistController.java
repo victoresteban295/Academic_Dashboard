@@ -63,17 +63,19 @@ public class ChecklistController {
     //  * Use to add checkpoints
     //  * Use to remove checkpoints
     //  * Use to reorder checkpoints
+    //  * Use to Move checkpoints to completed checkpoints list
     @PutMapping("/{username}/modify/checkpoints/{listId}")
     public ResponseEntity<Checklist> modifyCheckpoints(
             @PathVariable String username, 
             @PathVariable String listId, 
-            @RequestBody List<Checkpoint> checkpoints) {
+            @RequestBody Checklist checklist) {
 
         return new ResponseEntity<Checklist>(
                 checklistService.modifyCheckpoints(
                     username, 
                     listId,
-                    checkpoints),
+                    checklist.getCheckpoints(),
+                    checklist.getCompletedPoints()),
                 HttpStatus.OK);
     }
 

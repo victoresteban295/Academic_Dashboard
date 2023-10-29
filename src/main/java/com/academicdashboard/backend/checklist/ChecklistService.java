@@ -91,13 +91,20 @@ public class ChecklistService {
     //  * Use to add checkpoints
     //  * Use to remove checkpoints
     //  * Use to reorder checkpoints
-    public Checklist modifyCheckpoints(String username, String listId, List<Checkpoint> checkpoints) {
+    //  * Use to Move checkpoints to completed checkpoints list
+    public Checklist modifyCheckpoints(
+            String username, 
+            String listId, 
+            List<Checkpoint> checkpoints, 
+            List<Checkpoint> completedPoints) {
+
         if(verifyUser(username)) {
             //Find Checklist to Update
             Checklist checklist = checklistRepository
                 .findChecklistByListId(listId)
                 .orElseThrow(() -> new ApiRequestException("Checklist Not Found"));
             checklist.setCheckpoints(checkpoints); //Update Checkpoints
+            checklist.setCompletedPoints(completedPoints); //Update Completed Checkpoints
             return checklistRepository.save(checklist); //Save Modified Checklist
         } else {
             throw new ApiRequestException("Username Not Found");
