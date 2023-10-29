@@ -79,6 +79,23 @@ public class GrouplistController {
                 HttpStatus.OK);
     }
 
+    //Move Checklist From Grouplist to Grouplist || Return Designated Grouplist
+    @PutMapping("/{username}/move/{listId}/from/{fromGroupId}/to/{toGroupId}")
+    public ResponseEntity<Grouplist> moveChecklist(
+            @PathVariable String username, 
+            @PathVariable String listId, 
+            @PathVariable String fromGroupId, 
+            @PathVariable String toGroupId) {
+
+        return new ResponseEntity<Grouplist>(
+                grouplistService.moveChecklist(
+                    username, 
+                    listId,
+                    fromGroupId,
+                    toGroupId), 
+                HttpStatus.OK);
+    }
+
     //Reorder Grouplist's Checklists || Return Modified Grouplist
     @PutMapping("/{username}/reorder/checklists/{groupId}") 
     public ResponseEntity<Grouplist> reorderChecklists(

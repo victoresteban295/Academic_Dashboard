@@ -73,10 +73,11 @@ public class GrouplistService {
                     .build());
 
             //Add New Grouplist to User
-            mongoTemplate.update(User.class)
-                .matching(Criteria.where("username").is(username))
-                .apply(new Update().push("grouplists").value(grouplist));
-
+            mongoTemplate.findAndModify(
+                    new Query().addCriteria(Criteria.where("username").is(username)),
+                    new Update().push("grouplists", grouplist),
+                    new FindAndModifyOptions().returnNew(true).upsert(true),
+                    User.class);
             return grouplist;
         } else {
             throw new ApiRequestException("Username Not Found");
@@ -144,6 +145,45 @@ public class GrouplistService {
             if(grouplistExists) {
                 return mongoTemplate.findAndModify(
                     query("groupId", groupId), 
+                    pushUpdate("checklists", checklist), 
+                    options(true, true), 
+                    Grouplist.class);
+            } else {
+                throw new ApiRequestException("Grouplist Not Found");
+            }
+        } else {
+            throw new ApiRequestException("User Not Found");
+        }
+    }
+
+    //Move Checklist From Grouplist to Grouplist || Return Designated Grouplist
+    public Grouplist moveChecklist(
+            String username,
+            String listId, 
+            String fromGroupId, 
+            String toGroupId) {
+
+        if(verifyUser(username)) {
+            boolean fromExists = grouplistRepository.existsByGroupId(fromGroupId); 
+            boolean toExists = grouplistRepository.existsByGroupId(toGroupId); 
+            if(fromExists && toExists) {
+                //Find Existing Checklist
+                Checklist checklist = Optional.ofNullable(
+                        mongoTemplate.findOne(
+                            query("listId", listId), 
+                            Checklist.class))
+                    .orElseThrow(() -> new ApiRequestException("Checklist Not Found"));
+                
+                //Remove Checklist From Original Grouplist
+                mongoTemplate.findAndModify(
+                    query("groupId", fromGroupId), 
+                    pullUpdate("checklists", checklist), 
+                    options(true, true), 
+                    Grouplist.class);
+
+                //Add Checklist To Designated Grouplist
+                return mongoTemplate.findAndModify(
+                    query("groupId", toGroupId), 
                     pushUpdate("checklists", checklist), 
                     options(true, true), 
                     Grouplist.class);

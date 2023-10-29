@@ -12,4 +12,5 @@ public interface GrouplistRepository extends MongoRepository<Grouplist, ObjectId
 
     @DeleteQuery
     void deleteGrouplistByGroupId(String groupId);
+    boolean existsByGroupId(String groupId);
 }
