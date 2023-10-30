@@ -25,6 +25,6 @@ public class Checklist {
     private String listId; //Used for Queries (JNanoId)
     private String title;
     private List<Checkpoint> checkpoints;
-    private List<Checkpoint> CompletedPoints;
+    private List<Checkpoint> completedPoints;
 
 }

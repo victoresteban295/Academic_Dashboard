@@ -59,6 +59,7 @@ public class ChecklistService {
                         .listId(publicId(10))
                         .title(title)
                         .checkpoints(new ArrayList<>())
+                        .completedPoints(new ArrayList<>())
                         .build());
 
             //Save Checklist in User's 'checklists' attribute

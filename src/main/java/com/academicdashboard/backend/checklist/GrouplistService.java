@@ -106,6 +106,7 @@ public class GrouplistService {
                     .listId(publicId(10))
                     .title(title)
                     .checkpoints(new ArrayList<>())
+                    .completedPoints(new ArrayList<>())
                     .build());
 
             //Find & Update Grouplist with Newly Created Checklist
