@@ -105,6 +105,7 @@ public class GrouplistService {
             Checklist checklist = mongoTemplate.insert(Checklist.builder()
                     .listId(publicId(10))
                     .title(title)
+                    .groupId(groupId)
                     .checkpoints(new ArrayList<>())
                     .completedPoints(new ArrayList<>())
                     .build());
@@ -141,12 +142,17 @@ public class GrouplistService {
                     pullUpdate("checklists", checklist), 
                     User.class);
 
+            Checklist updatedChecklist = mongoTemplate.findAndModify(
+                    query("listId", listId), 
+                    new Update().set("groupId", groupId), 
+                    Checklist.class);
+
             //Find & Update Grouplist with Checklist
             boolean grouplistExists = mongoTemplate.exists(query("groupId", groupId), Grouplist.class); 
             if(grouplistExists) {
                 return mongoTemplate.findAndModify(
                     query("groupId", groupId), 
-                    pushUpdate("checklists", checklist), 
+                    pushUpdate("checklists", updatedChecklist), 
                     options(true, true), 
                     Grouplist.class);
             } else {
@@ -182,10 +188,15 @@ public class GrouplistService {
                     options(true, true), 
                     Grouplist.class);
 
+                Checklist updatedChecklist = mongoTemplate.findAndModify(
+                    query("listId", listId), 
+                    new Update().set("groupId", toGroupId), 
+                    Checklist.class);
+
                 //Add Checklist To Designated Grouplist
                 return mongoTemplate.findAndModify(
                     query("groupId", toGroupId), 
-                    pushUpdate("checklists", checklist), 
+                    pushUpdate("checklists", updatedChecklist), 
                     options(true, true), 
                     Grouplist.class);
             } else {
@@ -230,18 +241,26 @@ public class GrouplistService {
 
             boolean grouplistExists = mongoTemplate.exists(query("groupId", groupId), Grouplist.class);
             if(grouplistExists) {
-                //Add Checklist to User's 'checklists' attribute
-                mongoTemplate.findAndModify(
-                        query("username", username), 
-                        pushUpdate("checklists", checklist), 
-                        User.class);
 
                 //Remove Checklist from Grouplist's 'checklists' attribute
-                return mongoTemplate.findAndModify(
+                Grouplist grouplist = mongoTemplate.findAndModify(
                     query("groupId", groupId), 
                     pullUpdate("checklists", checklist), 
                     options(true, true), 
                     Grouplist.class);
+
+                Checklist updatedChecklist = mongoTemplate.findAndModify(
+                    query("listId", listId), 
+                    new Update().set("groupId", ""), 
+                    Checklist.class);
+
+                //Add Checklist to User's 'checklists' attribute
+                mongoTemplate.findAndModify(
+                        query("username", username), 
+                        pushUpdate("checklists", updatedChecklist), 
+                        User.class);
+                
+                return grouplist;
             } else {
                 throw new ApiRequestException("Grouplist Not Found");
             }

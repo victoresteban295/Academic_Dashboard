@@ -58,6 +58,7 @@ public class ChecklistService {
                 .insert(Checklist.builder()
                         .listId(publicId(10))
                         .title(title)
+                        .groupId("")
                         .checkpoints(new ArrayList<>())
                         .completedPoints(new ArrayList<>())
                         .build());

@@ -24,6 +24,7 @@ public class Checklist {
     //CheckList's Details
     private String listId; //Used for Queries (JNanoId)
     private String title;
+    private String groupId; //Empty String if no Group
     private List<Checkpoint> checkpoints;
     private List<Checkpoint> completedPoints;
 
