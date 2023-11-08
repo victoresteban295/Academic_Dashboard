@@ -1,5 +1,6 @@
 package com.academicdashboard.backend.checklist;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
@@ -67,14 +68,14 @@ public class ChecklistController {
     public ResponseEntity<Checklist> modifyCheckpoints(
             @PathVariable String username, 
             @PathVariable String listId, 
-            @RequestBody Checklist checklist) {
+            @RequestBody Map<String, List<Checkpoint>> payload) {
 
         return new ResponseEntity<Checklist>(
                 checklistService.modifyCheckpoints(
                     username, 
                     listId,
-                    checklist.getCheckpoints(),
-                    checklist.getCompletedPoints()),
+                    payload.get("checkpoints"),
+                    payload.get("completedPoints")),
                 HttpStatus.OK);
     }
 
