@@ -40,7 +40,8 @@ public class ChecklistController {
         return new ResponseEntity<Checklist>(
                 checklistService.createChecklist(
                     username, 
-                    payload.get("title")), 
+                    payload.get("title"), 
+                    payload.get("listId")), 
                 HttpStatus.CREATED);
     }
 

@@ -50,13 +50,38 @@ public class ChecklistService {
     //     }
     // }
 
+    // //Create New Checklist || Returns Checklist
+    // public Checklist createChecklist(String username, String title) {
+    //     if(verifyUser(username)) {
+    //         //Create & Save Checklist
+    //         Checklist checklist = checklistRepository
+    //             .insert(Checklist.builder()
+    //                     .listId(publicId(10))
+    //                     .title(title)
+    //                     .groupId("")
+    //                     .checkpoints(new ArrayList<>())
+    //                     .completedPoints(new ArrayList<>())
+    //                     .build());
+    //
+    //         //Save Checklist in User's 'checklists' attribute
+    //         mongoTemplate.findAndModify(
+    //                 new Query().addCriteria(Criteria.where("username").is(username)),
+    //                 new Update().push("checklists", checklist),
+    //                 new FindAndModifyOptions().returnNew(true).upsert(true),
+    //                 User.class);
+    //         return checklist;
+    //     } else {
+    //         throw new ApiRequestException("User Not Found");
+    //     }
+    // }
+
     //Create New Checklist || Returns Checklist
-    public Checklist createChecklist(String username, String title) {
+    public Checklist createChecklist(String username, String title, String listId) {
         if(verifyUser(username)) {
             //Create & Save Checklist
             Checklist checklist = checklistRepository
                 .insert(Checklist.builder()
-                        .listId(publicId(10))
+                        .listId(listId)
                         .title(title)
                         .groupId("")
                         .checkpoints(new ArrayList<>())
