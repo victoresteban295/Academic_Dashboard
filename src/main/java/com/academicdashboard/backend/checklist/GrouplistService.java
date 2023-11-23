@@ -60,10 +60,33 @@ public class GrouplistService {
     /*********** CRUD METHODS ***********/
     /************************************/
 
+    // //Create New Grouplist | Returns Grouplist Created
+    // public Grouplist createGrouplist(String username, String title) {
+    //     if(verifyUser(username)) {
+    //         String groupId = publicId(10); //Create Grouplist's grouId
+    //         //Create Grouplist
+    //         Grouplist grouplist = grouplistRepository.insert(
+    //                 Grouplist.builder()
+    //                 .groupId(groupId)
+    //                 .title(title)
+    //                 .checklists(new ArrayList<>())
+    //                 .build());
+    //
+    //         //Add New Grouplist to User
+    //         mongoTemplate.findAndModify(
+    //                 new Query().addCriteria(Criteria.where("username").is(username)),
+    //                 new Update().push("grouplists", grouplist),
+    //                 new FindAndModifyOptions().returnNew(true).upsert(true),
+    //                 User.class);
+    //         return grouplist;
+    //     } else {
+    //         throw new ApiRequestException("Username Not Found");
+    //     }
+    // }
+
     //Create New Grouplist | Returns Grouplist Created
-    public Grouplist createGrouplist(String username, String title) {
+    public Grouplist createGrouplist(String username, String title, String groupId) {
         if(verifyUser(username)) {
-            String groupId = publicId(10); //Create Grouplist's grouId
             //Create Grouplist
             Grouplist grouplist = grouplistRepository.insert(
                     Grouplist.builder()

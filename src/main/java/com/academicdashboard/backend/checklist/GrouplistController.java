@@ -21,6 +21,19 @@ import lombok.RequiredArgsConstructor;
 public class GrouplistController {
     private final GrouplistService grouplistService;
 
+    // //Create New Grouplist | Returns Grouplist Created
+    // @PostMapping("/{username}/new")
+    // public ResponseEntity<Grouplist> createGrouplist(
+    //         @PathVariable String username, 
+    //         @RequestBody Map<String, String> payload) {
+    //
+    //     return new ResponseEntity<Grouplist>(
+    //             grouplistService.createGrouplist(
+    //                 username, 
+    //                 payload.get("title")), 
+    //             HttpStatus.CREATED);
+    // } 
+
     //Create New Grouplist | Returns Grouplist Created
     @PostMapping("/{username}/new")
     public ResponseEntity<Grouplist> createGrouplist(
@@ -30,7 +43,8 @@ public class GrouplistController {
         return new ResponseEntity<Grouplist>(
                 grouplistService.createGrouplist(
                     username, 
-                    payload.get("title")), 
+                    payload.get("title"), 
+                    payload.get("groupId")), 
                 HttpStatus.CREATED);
     } 
 
