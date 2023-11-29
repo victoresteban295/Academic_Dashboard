@@ -141,7 +141,7 @@ public class GrouplistController {
     }
 
     //Delete Grouplist || Void
-    @DeleteMapping("/{userame}/delete/{groupId}")
+    @DeleteMapping("/{username}/delete/{groupId}")
     public ResponseEntity<Void> deleteGrouplist(
             @PathVariable String username, 
             @PathVariable String groupId) {
