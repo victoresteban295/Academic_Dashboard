@@ -88,6 +88,65 @@ public class GrouplistService {
         }
     }
 
+    //Reorder User's Grouplists || Returns Re-ordered Grouplists
+    public List<Grouplist> reorderGrouplists(String username, List<Grouplist> grouplists) {
+        if(verifyUser(username)) {
+            //Re-order Grouplists
+            List<Grouplist> reorderGrouplists = new ArrayList<>();
+
+            //Loop thru grouplists & add grouplist to Re-ordered Grouplists
+            for(Grouplist grouplist: grouplists) {
+                //Extract Grouplist Object
+                Grouplist group = grouplistRepository
+                    .findGrouplistByGroupId(grouplist.getGroupId())
+                    .orElseThrow(() -> new ApiRequestException("Grouplist Not Found"));
+                //Add to Re-ordered Grouplists
+                reorderGrouplists.add(group);
+            }
+
+            //Find User whose List is Updating
+            User user = mongoTemplate
+                .findOne(query("username", username),User.class);
+
+            //Update User's Grouplists
+            user.setGrouplists(reorderGrouplists);
+            mongoTemplate.save(user); //Save Changes of User Document
+
+            return reorderGrouplists;
+        } else {
+            throw new ApiRequestException("User Not Found");
+        }
+    }
+
+    //Re-order Grouplist's Checklists || Return Modified Grouplist
+    public Grouplist reorderGroupChecklists(String username, Grouplist grouplist) {
+        if(verifyUser(username)) {
+            //Extract groupId & new checklists from Grouplist
+            String groupId = grouplist.getGroupId(); 
+            List<Checklist> checklists = grouplist.getChecklists();
+
+            //Re-ordered Checklists
+            List<Checklist> reorderLists = new ArrayList<>();
+
+            //Extract Checklist From Database
+            for(Checklist checklist : checklists) {
+                Checklist list = mongoTemplate.findOne(
+                    query("listId", checklist.getListId()), 
+                    Checklist.class);
+                reorderLists.add(list);
+            }
+
+            Grouplist editGrouplist = grouplistRepository
+                .findGrouplistByGroupId(groupId)
+                .orElseThrow(() -> new ApiRequestException("Grouplist Not Found"));
+
+            editGrouplist.setChecklists(reorderLists);
+            return grouplistRepository.save(editGrouplist);
+        } else {
+            throw new ApiRequestException("User Not Found");
+        }
+    }
+
     //Create & Add New Checklist to Grouplist || Return Modified Grouplist
     public Grouplist createChecklist(String username, String groupId, String listId, String title) {
         if(verifyUser(username)) {

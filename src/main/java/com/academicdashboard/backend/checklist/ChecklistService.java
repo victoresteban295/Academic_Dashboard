@@ -55,6 +55,38 @@ public class ChecklistService {
         }
     }
 
+    //Reorder User's Checklists || Returns Re-ordered Checklists
+    public List<Checklist> reorderChecklist(String username, List<Checklist> checklists) {
+        if(verifyUser(username)) {
+            //Re-ordered Checklists
+            List<Checklist> reorderChecklists = new ArrayList<>();
+
+            //Loop thru checklists & add Checkist to Re-ordered Checklists
+            for(Checklist checklist : checklists) {
+                //Extract Checklist Object
+                Checklist list = checklistRepository
+                    .findChecklistByListId(checklist.getListId())
+                    .orElseThrow(() -> new ApiRequestException("Checklist Not Found"));
+                //Add to Re-ordered Checklists
+                reorderChecklists.add(list);
+            }
+
+            //Find User whose List is Updating
+            User user = mongoTemplate
+                .findOne(
+                    new Query().addCriteria(Criteria.where("username").is(username)), 
+                    User.class);
+
+            //Update User's Checklists
+            user.setChecklists(reorderChecklists);
+            mongoTemplate.save(user); //Save Changes of User Document
+
+            return reorderChecklists;
+        } else {
+            throw new ApiRequestException("User Not Found");
+        }
+    }
+
     //Modify Checklist's Title || Returns Modified Checklist
     public Checklist modifyTitle(String username, String listId, String title) {
         if(verifyUser(username)) {

@@ -45,6 +45,19 @@ public class ChecklistController {
                 HttpStatus.CREATED);
     }
 
+    //Reorder User's Checklists || Returns Re-ordered Checklists
+    @PutMapping("/{username}/reorder")
+    public ResponseEntity<List<Checklist>> reorderChecklists(
+            @PathVariable String username, 
+            @RequestBody Map<String, List<Checklist>> payload) {
+
+        return new ResponseEntity<List<Checklist>>(
+                checklistService.reorderChecklist(
+                    username, 
+                    payload.get("checklists")), 
+                HttpStatus.OK);
+    }
+
     //Modify Checklist's Title || Returns Modified Checklist
     @PutMapping("/{username}/modify/title/{listId}")
     public ResponseEntity<Checklist> modifyTitle(

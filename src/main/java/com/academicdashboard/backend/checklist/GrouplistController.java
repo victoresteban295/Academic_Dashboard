@@ -50,6 +50,32 @@ public class GrouplistController {
                 HttpStatus.OK);
     }
 
+    //Reorder User's Grouplists || Returns Re-ordered Grouplists
+    @PutMapping("/{username}/reorder")
+    public ResponseEntity<List<Grouplist>> reorderGrouplists(
+            @PathVariable String username, 
+            @RequestBody Map<String, List<Grouplist>> payload) {
+
+        return new ResponseEntity<List<Grouplist>>(
+                grouplistService.reorderGrouplists(
+                    username, 
+                    payload.get("grouplists")), 
+                HttpStatus.OK);
+    }
+
+    //Reorder User's Grouplists || Returns Re-ordered Grouplists
+    @PutMapping("/{username}/reorder/checklists")
+    public ResponseEntity<Grouplist> reorderGroupChecklists(
+            @PathVariable String username, 
+            @RequestBody Map<String, Grouplist> payload) {
+
+        return new ResponseEntity<Grouplist>(
+                grouplistService.reorderGroupChecklists(
+                    username, 
+                    payload.get("grouplist")), 
+                HttpStatus.OK);
+    }
+
     //Create & Add New Checklist to Grouplist || Return Modified Grouplist
     @PutMapping("/{username}/new/checklist/{groupId}")
     public ResponseEntity<Grouplist> createChecklist(
