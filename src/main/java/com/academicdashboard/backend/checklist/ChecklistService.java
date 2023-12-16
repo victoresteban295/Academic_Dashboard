@@ -3,11 +3,9 @@ package com.academicdashboard.backend.checklist;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import com.academicdashboard.backend.exception.ApiRequestException;
@@ -33,23 +31,32 @@ public class ChecklistService {
     //Create New Checklist || Returns Checklist
     public Checklist createChecklist(String username, String title, String listId) {
         if(verifyUser(username)) {
-            //Create & Save Checklist
-            Checklist checklist = checklistRepository
-                .insert(Checklist.builder()
-                        .listId(listId)
-                        .title(title)
-                        .groupId("")
-                        .checkpoints(new ArrayList<>())
-                        .completedPoints(new ArrayList<>())
-                        .build());
-
-            //Save Checklist in User's 'checklists' attribute
-            mongoTemplate.findAndModify(
-                    new Query().addCriteria(Criteria.where("username").is(username)),
-                    new Update().push("checklists", checklist),
-                    new FindAndModifyOptions().returnNew(true).upsert(true),
+            //Find User Document
+            User user = mongoTemplate
+                .findOne(new Query().addCriteria(Criteria.where("username").is(username)), 
                     User.class);
-            return checklist;
+
+            //User's Non-Grouped Checklists
+            List<Checklist> checklists = user.getChecklists();
+
+            //User's Are Limited to 20 (Non-Grouped) Checklists
+            if(checklists.size() < 20) {
+                //Create & Save Checklist
+                Checklist checklist = checklistRepository
+                    .insert(Checklist.builder()
+                            .listId(listId)
+                            .title(title)
+                            .groupId("")
+                            .checkpoints(new ArrayList<>())
+                            .completedPoints(new ArrayList<>())
+                            .build());
+                checklists.add(checklist); //Add Checklist 
+                user.setChecklists(checklists); //Update User's Checklists
+                mongoTemplate.save(user); //Save Changes to User Document
+                return checklist;
+            } else {
+                throw new ApiRequestException("User's Checklists Limit Exceeded: 20");
+            }
         } else {
             throw new ApiRequestException("User Not Found");
         }
@@ -106,7 +113,7 @@ public class ChecklistService {
     //  * Use to remove checkpoints
     //  * Use to reorder checkpoints
     //  * Use to Move checkpoints to completed checkpoints list
-    public Checklist modifyCheckpoints(
+    public Checklist modifyCheckpoints01(
             String username, 
             String listId, 
             List<Checkpoint> checkpoints, 
@@ -124,11 +131,55 @@ public class ChecklistService {
             throw new ApiRequestException("Username Not Found");
         }
     }
+    public Checklist modifyCheckpoints(
+            String username, 
+            String listId, 
+            List<Checkpoint> checkpoints, 
+            List<Checkpoint> completedPoints) {
+
+        if(verifyUser(username)) {
+            //Limited to 20 Checkpoints & 20 Completed Checkpoints
+            if(checkpoints.size() <= 20 && completedPoints.size() <= 20) {
+                //Find Checklist to Update
+                Checklist checklist = checklistRepository
+                    .findChecklistByListId(listId)
+                    .orElseThrow(() -> new ApiRequestException("Checklist Not Found"));
+
+                checklist.setCheckpoints(checkpoints); //Update Checkpoints
+                checklist.setCompletedPoints(completedPoints); //Update Completed Checkpoints
+                return checklistRepository.save(checklist); //Save Modified Checklist
+            } else {
+                //Checkpoints Limit Exceeded
+                if(checkpoints.size() > 20) {
+                    throw new ApiRequestException("Checkpoints Limit Exceeded: 20");
+                //Completed Checkpoints Limit Exceeded
+                } else {
+                    throw new ApiRequestException("Completed Checkpoints Limit Exceeded: 20");
+                }
+            }
+        } else {
+            throw new ApiRequestException("Username Not Found");
+        }
+    }
 
     //Delete Checklist || Void
     public void deleteChecklist(String username, String listId) {
         if(verifyUser(username)) {
-            checklistRepository.deleteChecklistByListId(listId); //Delete Checklist
+            //Delte Checklist
+            checklistRepository
+                .deleteChecklistByListId(listId);
+
+            //Find User Document
+            User user = mongoTemplate.findOne(new Query()
+                    .addCriteria(Criteria.where("username").is(username)), 
+                    User.class);
+            //Extract User's Checklists
+            List<Checklist> checklists = user.getChecklists();
+
+            //Remove Deleted Checklist from User's Checklists
+            checklists.removeIf(checklist -> checklist.getListId() == listId);
+            user.setChecklists(checklists); //Update User's Checklists
+            mongoTemplate.save(user); //Save Changes to User Document
         } else {
             throw new ApiRequestException("Username Not Found");
         }

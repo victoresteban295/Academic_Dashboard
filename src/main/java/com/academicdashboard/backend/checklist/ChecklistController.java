@@ -20,17 +20,6 @@ import lombok.RequiredArgsConstructor;
 public class ChecklistController {
     private final ChecklistService checklistService;
 
-    //Get Checklist By ListId || Return Checklist
-    // @GetMapping("/{username}/get/{listId}")
-    // public ResponseEntity<Checklist> getChecklist(
-    //         @PathVariable String username, 
-    //         @PathVariable String listId) {
-    //
-    //     return new ResponseEntity<Checklist>(
-    //             checklistService.getChecklist(username, listId), 
-    //             HttpStatus.OK);
-    // }
-
     //Create New Checklist || Returns Checklist
     @PostMapping("/{username}/new")
     public ResponseEntity<Checklist> createChecklist(
