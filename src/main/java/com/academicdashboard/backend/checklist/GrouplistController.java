@@ -124,21 +124,6 @@ public class GrouplistController {
                 HttpStatus.OK);
     }
 
-    //Reorder Grouplist's Checklists || Return Modified Grouplist
-    @PutMapping("/{username}/reorder/checklists/{groupId}") 
-    public ResponseEntity<Grouplist> reorderChecklists(
-            @PathVariable String username, 
-            @PathVariable String groupId, 
-            @RequestBody List<Checklist> checklists) {
-
-        return new ResponseEntity<Grouplist>(
-                grouplistService.reorderChecklists(
-                    username, 
-                    groupId, 
-                    checklists), 
-                HttpStatus.OK);
-    }
-
     //Remove Checklist From Grouplist | Returns Modified Grouplist
     @PutMapping("/{username}/remove/{listId}/from/{groupId}")
     public ResponseEntity<Grouplist> removeChecklist(

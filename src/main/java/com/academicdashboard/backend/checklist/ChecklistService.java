@@ -38,14 +38,16 @@ public class ChecklistService {
 
             //User's Non-Grouped Checklists
             List<Checklist> checklists = user.getChecklists();
+            String trimTitle = title.trim(); //Remove any leading/trailing spaces
 
             //User's Are Limited to 20 (Non-Grouped) Checklists
-            if(checklists.size() < 20) {
+            //Checklist Title Are Limited to 50 Characters & Cannot Be Empty
+            if(checklists.size() <= 20 && trimTitle.length() <= 50 && trimTitle.length() > 1) {
                 //Create & Save Checklist
                 Checklist checklist = checklistRepository
                     .insert(Checklist.builder()
                             .listId(listId)
-                            .title(title)
+                            .title(trimTitle)
                             .groupId("")
                             .checkpoints(new ArrayList<>())
                             .completedPoints(new ArrayList<>())
@@ -55,7 +57,13 @@ public class ChecklistService {
                 mongoTemplate.save(user); //Save Changes to User Document
                 return checklist;
             } else {
-                throw new ApiRequestException("User's Checklists Limit Exceeded: 20");
+                if(checklists.size() > 20) {
+                    throw new ApiRequestException("User's Checklists Limit Exceeded: 20");
+                } else if(trimTitle.length() > 50) {
+                    throw new ApiRequestException("Checklist's Title Cannot Exceeded 50 Characters");
+                } else {
+                    throw new ApiRequestException("Empty Checklist's Title");
+                }
             }
         } else {
             throw new ApiRequestException("User Not Found");
@@ -97,12 +105,21 @@ public class ChecklistService {
     //Modify Checklist's Title || Returns Modified Checklist
     public Checklist modifyTitle(String username, String listId, String title) {
         if(verifyUser(username)) {
-            //Find Checklist to Update
-            Checklist checklist = checklistRepository
-                .findChecklistByListId(listId)
-                .orElseThrow(() -> new ApiRequestException("Checklist Not Found"));
-            checklist.setTitle(title); //Modify Title
-            return checklistRepository.save(checklist); //Save Modified Checklist
+            String trimTitle = title.trim();
+            if(trimTitle.length() <= 50 && trimTitle.length() > 1) {
+                //Find Checklist to Update
+                Checklist checklist = checklistRepository
+                    .findChecklistByListId(listId)
+                    .orElseThrow(() -> new ApiRequestException("Checklist Not Found"));
+                checklist.setTitle(title); //Modify Title
+                return checklistRepository.save(checklist); //Save Modified Checklist
+            } else {
+                if(trimTitle.length() > 50) {
+                    throw new ApiRequestException("Checklist's Title Cannot Exceeded 50 Characters");
+                } else {
+                    throw new ApiRequestException("Empty Checklist's Title");
+                }
+            }
         } else {
             throw new ApiRequestException("User Not Found");
         }
@@ -113,24 +130,6 @@ public class ChecklistService {
     //  * Use to remove checkpoints
     //  * Use to reorder checkpoints
     //  * Use to Move checkpoints to completed checkpoints list
-    public Checklist modifyCheckpoints01(
-            String username, 
-            String listId, 
-            List<Checkpoint> checkpoints, 
-            List<Checkpoint> completedPoints) {
-
-        if(verifyUser(username)) {
-            //Find Checklist to Update
-            Checklist checklist = checklistRepository
-                .findChecklistByListId(listId)
-                .orElseThrow(() -> new ApiRequestException("Checklist Not Found"));
-            checklist.setCheckpoints(checkpoints); //Update Checkpoints
-            checklist.setCompletedPoints(completedPoints); //Update Completed Checkpoints
-            return checklistRepository.save(checklist); //Save Modified Checklist
-        } else {
-            throw new ApiRequestException("Username Not Found");
-        }
-    }
     public Checklist modifyCheckpoints(
             String username, 
             String listId, 
@@ -138,8 +137,8 @@ public class ChecklistService {
             List<Checkpoint> completedPoints) {
 
         if(verifyUser(username)) {
-            //Limited to 20 Checkpoints & 20 Completed Checkpoints
-            if(checkpoints.size() <= 20 && completedPoints.size() <= 20) {
+            //Limited to 25 Checkpoints & 25 Completed Checkpoints
+            if(checkpoints.size() <= 25 && completedPoints.size() <= 25) {
                 //Find Checklist to Update
                 Checklist checklist = checklistRepository
                     .findChecklistByListId(listId)
@@ -150,11 +149,11 @@ public class ChecklistService {
                 return checklistRepository.save(checklist); //Save Modified Checklist
             } else {
                 //Checkpoints Limit Exceeded
-                if(checkpoints.size() > 20) {
-                    throw new ApiRequestException("Checkpoints Limit Exceeded: 20");
+                if(checkpoints.size() > 25) {
+                    throw new ApiRequestException("Checkpoints Limit Exceeded: 25");
                 //Completed Checkpoints Limit Exceeded
                 } else {
-                    throw new ApiRequestException("Completed Checkpoints Limit Exceeded: 20");
+                    throw new ApiRequestException("Completed Checkpoints Limit Exceeded: 25");
                 }
             }
         } else {
@@ -165,21 +164,46 @@ public class ChecklistService {
     //Delete Checklist || Void
     public void deleteChecklist(String username, String listId) {
         if(verifyUser(username)) {
-            //Delte Checklist
+            //Find Checklist Getting Deleted
+            Checklist checklist = checklistRepository
+                .findChecklistByListId(listId)
+                .orElseThrow(() -> new ApiRequestException("Checklist Not Found"));
+
+            String groupId = checklist.getGroupId();
+            //Checklist is Non-Grouped
+            if(groupId.equals("")) {
+                //Find User Document
+                User user = mongoTemplate.findOne(new Query()
+                        .addCriteria(Criteria.where("username").is(username)), 
+                        User.class);
+                //Extract User's Checklists
+                List<Checklist> checklists = user.getChecklists();
+
+                //Remove Deleted Checklist from User's Checklists
+                checklists.removeIf(list -> list.getListId().equals(listId));
+                user.setChecklists(checklists); //Update User's Checklists
+                mongoTemplate.save(user); //Save Changes to User Document
+
+            //Checklist is Grouped
+            } else {
+                //Find Group Document
+                Grouplist grouplist = mongoTemplate.findOne(new Query()
+                        .addCriteria(Criteria.where("groupId").is(groupId)), 
+                        Grouplist.class);
+
+                //Extract User's Checklists
+                List<Checklist> checklists = grouplist.getChecklists();
+
+                //Remove Deleted Checklist from Grouplist's Checklists
+                checklists.removeIf(list -> list.getListId().equals(listId));
+                grouplist.setChecklists(checklists); //Update Grouplist's Checklists
+                mongoTemplate.save(grouplist); //Save Changes to Grouplist Document
+            }
+
+            //Delete Checklist
             checklistRepository
                 .deleteChecklistByListId(listId);
 
-            //Find User Document
-            User user = mongoTemplate.findOne(new Query()
-                    .addCriteria(Criteria.where("username").is(username)), 
-                    User.class);
-            //Extract User's Checklists
-            List<Checklist> checklists = user.getChecklists();
-
-            //Remove Deleted Checklist from User's Checklists
-            checklists.removeIf(checklist -> checklist.getListId() == listId);
-            user.setChecklists(checklists); //Update User's Checklists
-            mongoTemplate.save(user); //Save Changes to User Document
         } else {
             throw new ApiRequestException("Username Not Found");
         }

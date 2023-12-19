@@ -54,21 +54,42 @@ public class GrouplistService {
     //Create New Grouplist | Returns Grouplist Created
     public Grouplist createGrouplist(String username, String title, String groupId) {
         if(verifyUser(username)) {
-            //Create Grouplist
-            Grouplist grouplist = grouplistRepository.insert(
-                    Grouplist.builder()
-                    .groupId(groupId)
-                    .title(title)
-                    .checklists(new ArrayList<>())
-                    .build());
-
-            //Add New Grouplist to User
-            mongoTemplate.findAndModify(
-                    new Query().addCriteria(Criteria.where("username").is(username)),
-                    new Update().push("grouplists", grouplist),
-                    new FindAndModifyOptions().returnNew(true).upsert(true),
+            //Find User Document
+            User user = mongoTemplate
+                .findOne(new Query().addCriteria(Criteria.where("username").is(username)), 
                     User.class);
-            return grouplist;
+
+            //User's Grouplists
+            List<Grouplist> grouplists = user.getGrouplists();
+            String trimTitle = title.trim();
+
+            //User's Are Limited to 20 Grouplists
+            //Grouplist Title Are Limited to 20 Characters & Cannot Be Empty
+            if(grouplists.size() <= 20 && trimTitle.length() <= 20 && trimTitle.length() > 1) {
+                //Create Grouplist
+                Grouplist grouplist = grouplistRepository.insert(
+                        Grouplist.builder()
+                        .groupId(groupId)
+                        .title(trimTitle)
+                        .checklists(new ArrayList<>())
+                        .build());
+
+                //Add New Grouplist to User
+                mongoTemplate.findAndModify(
+                        new Query().addCriteria(Criteria.where("username").is(username)),
+                        new Update().push("grouplists", grouplist),
+                        new FindAndModifyOptions().returnNew(true).upsert(true),
+                        User.class);
+                return grouplist;
+            } else {
+                if(grouplists.size() > 20) {
+                    throw new ApiRequestException("User's Grouplists Limit Exceeded: 20");
+                } else if(trimTitle.length() > 20) {
+                    throw new ApiRequestException("Grouplist's Title Cannot Exceeded 20 Characters");
+                } else {
+                    throw new ApiRequestException("Empty Grouplist's Title");
+                }
+            }
         } else {
             throw new ApiRequestException("Username Not Found");
         }
@@ -77,12 +98,21 @@ public class GrouplistService {
     //Modify Grouplist's Title || Return Modified Grouplist
     public Grouplist modifyTitle(String username, String groupId, String title) {
         if(verifyUser(username)) {
-            //Find Grouplist To Modify
-            Grouplist grouplist = grouplistRepository
-                .findGrouplistByGroupId(groupId)
-                .orElseThrow(() -> new ApiRequestException("Grouplist Not Found"));
-            grouplist.setTitle(title); //Set New Title
-            return grouplistRepository.save(grouplist); //Save & Return Modified Grouplist
+            String trimTitle = title.trim();
+            if(trimTitle.length() <= 50 && trimTitle.length() > 1) {
+                //Find Grouplist To Modify
+                Grouplist grouplist = grouplistRepository
+                    .findGrouplistByGroupId(groupId)
+                    .orElseThrow(() -> new ApiRequestException("Grouplist Not Found"));
+                grouplist.setTitle(trimTitle); //Set New Title
+                return grouplistRepository.save(grouplist); //Save & Return Modified Grouplist
+            } else {
+                if(trimTitle.length() > 20) {
+                    throw new ApiRequestException("Grouplist's Title Cannot Exceeded 20 Characters");
+                } else {
+                    throw new ApiRequestException("Empty Grouplist's Title");
+                }
+            }
         } else {
             throw new ApiRequestException("User Not Found");
         }
@@ -150,25 +180,36 @@ public class GrouplistService {
     //Create & Add New Checklist to Grouplist || Return Modified Grouplist
     public Grouplist createChecklist(String username, String groupId, String listId, String title) {
         if(verifyUser(username)) {
-            //Create & Save Checklist
-            Checklist checklist = mongoTemplate.insert(Checklist.builder()
-                    .listId(listId)
-                    .title(title)
-                    .groupId(groupId)
-                    .checkpoints(new ArrayList<>())
-                    .completedPoints(new ArrayList<>())
-                    .build());
+            //Find Grouplist
+            Grouplist grouplist = grouplistRepository
+                .findGrouplistByGroupId(groupId)
+                .orElseThrow(() -> new ApiRequestException("Grouplist Not Found"));
 
-            //Find & Update Grouplist with Newly Created Checklist
-            boolean grouplistExists = mongoTemplate.exists(query("groupId", groupId), Grouplist.class); 
-            if(grouplistExists) {
+            List<Checklist> checklists = grouplist.getChecklists();
+            String trimTitle = title.trim();
+            if(checklists.size() <= 20 && trimTitle.length() <= 50 && trimTitle.length() > 1) {
+                //Create & Save Checklist
+                Checklist checklist = mongoTemplate.insert(Checklist.builder()
+                        .listId(listId)
+                        .title(title)
+                        .groupId(groupId)
+                        .checkpoints(new ArrayList<>())
+                        .completedPoints(new ArrayList<>())
+                        .build());
+
                 return mongoTemplate.findAndModify(
                     query("groupId", groupId), 
                     pushUpdate("checklists", checklist), 
                     options(true, true), 
                     Grouplist.class);
             } else {
-                throw new ApiRequestException("Grouplist Not Found");
+                if(checklists.size() > 20) {
+                    throw new ApiRequestException("Grouplist's Checklists Limit Exceeded: 20");
+                } else if(trimTitle.length() > 50) {
+                    throw new ApiRequestException("Checklist's Title Cannot Exceeded 50 Characters");
+                } else {
+                    throw new ApiRequestException("Empty Checklist's Title");
+                }
             }
         } else {
             throw new ApiRequestException("User Not Found");
@@ -178,34 +219,38 @@ public class GrouplistService {
     //Add Existing Checklist to Grouplist || Return Modified Grouplist
     public Grouplist addChecklist(String username, String listId, String groupId) {
         if(verifyUser(username)) {
-            //Find Existing Checklist
-            Checklist checklist = Optional.ofNullable(
-                    mongoTemplate.findOne(
+            Grouplist grouplist = grouplistRepository
+                .findGrouplistByGroupId(groupId)
+                .orElseThrow(() -> new ApiRequestException("Grouplist Not Found"));
+
+            //Each Grouplist is Limited to 20 Checklists
+            List<Checklist> checklists = grouplist.getChecklists();
+            if(checklists.size() <= 20) {
+                //Find Existing Checklist
+                Checklist checklist = Optional.ofNullable(
+                        mongoTemplate.findOne(
+                            query("listId", listId), 
+                            Checklist.class))
+                    .orElseThrow(() -> new ApiRequestException("Checklist Not Found"));
+
+                //Remove Checklist From User's 'checklists' attribute
+                mongoTemplate.findAndModify(
+                        query("username", username), 
+                        pullUpdate("checklists", checklist), 
+                        User.class);
+
+                Checklist updatedChecklist = mongoTemplate.findAndModify(
                         query("listId", listId), 
-                        Checklist.class))
-                .orElseThrow(() -> new ApiRequestException("Checklist Not Found"));
+                        new Update().set("groupId", groupId), 
+                        Checklist.class);
 
-            //Remove Checklist From User's 'checklists' attribute
-            mongoTemplate.findAndModify(
-                    query("username", username), 
-                    pullUpdate("checklists", checklist), 
-                    User.class);
-
-            Checklist updatedChecklist = mongoTemplate.findAndModify(
-                    query("listId", listId), 
-                    new Update().set("groupId", groupId), 
-                    Checklist.class);
-
-            //Find & Update Grouplist with Checklist
-            boolean grouplistExists = mongoTemplate.exists(query("groupId", groupId), Grouplist.class); 
-            if(grouplistExists) {
                 return mongoTemplate.findAndModify(
                     query("groupId", groupId), 
                     pushUpdate("checklists", updatedChecklist), 
                     options(true, true), 
                     Grouplist.class);
             } else {
-                throw new ApiRequestException("Grouplist Not Found");
+                throw new ApiRequestException("Grouplist's Checklist Limit Exceeded: 20");
             }
         } else {
             throw new ApiRequestException("User Not Found");
@@ -221,58 +266,45 @@ public class GrouplistService {
 
         if(verifyUser(username)) {
             boolean fromExists = grouplistRepository.existsByGroupId(fromGroupId); 
-            boolean toExists = grouplistRepository.existsByGroupId(toGroupId); 
-            if(fromExists && toExists) {
-                //Find Existing Checklist
-                Checklist checklist = Optional.ofNullable(
-                        mongoTemplate.findOne(
-                            query("listId", listId), 
-                            Checklist.class))
-                    .orElseThrow(() -> new ApiRequestException("Checklist Not Found"));
-                
-                //Remove Checklist From Original Grouplist
-                mongoTemplate.findAndModify(
-                    query("groupId", fromGroupId), 
-                    pullUpdate("checklists", checklist), 
-                    options(true, true), 
-                    Grouplist.class);
+            if(fromExists) {
+                //Find Destinated Grouplist
+                Grouplist toGrouplist = grouplistRepository
+                    .findGrouplistByGroupId(toGroupId)
+                    .orElseThrow(() -> new ApiRequestException("Grouplist Not Found"));
 
-                Checklist updatedChecklist = mongoTemplate.findAndModify(
-                    query("listId", listId), 
-                    new Update().set("groupId", toGroupId), 
-                    Checklist.class);
+                List<Checklist> toChecklists = toGrouplist.getChecklists();
+                if(toChecklists.size() <= 20) {
+                    //Find Existing Checklist
+                    Checklist checklist = Optional.ofNullable(
+                            mongoTemplate.findOne(
+                                query("listId", listId), 
+                                Checklist.class))
+                        .orElseThrow(() -> new ApiRequestException("Checklist Not Found"));
+                    
+                    //Remove Checklist From Original Grouplist
+                    mongoTemplate.findAndModify(
+                        query("groupId", fromGroupId), 
+                        pullUpdate("checklists", checklist), 
+                        options(true, true), 
+                        Grouplist.class);
 
-                //Add Checklist To Designated Grouplist
-                return mongoTemplate.findAndModify(
-                    query("groupId", toGroupId), 
-                    pushUpdate("checklists", updatedChecklist), 
-                    options(true, true), 
-                    Grouplist.class);
+                    Checklist updatedChecklist = mongoTemplate.findAndModify(
+                        query("listId", listId), 
+                        new Update().set("groupId", toGroupId), 
+                        Checklist.class);
+
+                    //Add Checklist To Designated Grouplist
+                    return mongoTemplate.findAndModify(
+                        query("groupId", toGroupId), 
+                        pushUpdate("checklists", updatedChecklist), 
+                        options(true, true), 
+                        Grouplist.class);
+                } else {
+                    throw new ApiRequestException("Grouplist's Checklist Limit Exceeded: 20");
+                }
             } else {
                 throw new ApiRequestException("Grouplist Not Found");
             }
-        } else {
-            throw new ApiRequestException("User Not Found");
-        }
-    }
-
-    //Reorder Grouplist's Checklists || Return Modified Grouplist
-    public Grouplist reorderChecklists(String username, String groupId, List<Checklist> reorderChecklists) { 
-        if(verifyUser(username)) {
-            //Find Grouplist By groupId
-            Grouplist grouplist = grouplistRepository
-                .findGrouplistByGroupId(groupId)
-                .orElseThrow(() -> new ApiRequestException("Grouplist Not Found"));
-
-            //Reorder Grouplist's Checklists
-            List<Checklist> checklists = new ArrayList<>();
-            for(Checklist modifiedChecklist : reorderChecklists) {
-                checklists.add(mongoTemplate.findOne(
-                            query("listId", modifiedChecklist.getListId()), 
-                            Checklist.class)); 
-            }
-            grouplist.setChecklists(checklists);
-            return grouplistRepository.save(grouplist);
         } else {
             throw new ApiRequestException("User Not Found");
         }
@@ -281,37 +313,50 @@ public class GrouplistService {
     //Remove Checklist From Grouplist | Returns Modified Grouplist
     public Grouplist removeChecklist(String username, String listId, String groupId) {
         if(verifyUser(username)) {
-            //Find Checklist By listId
-            Checklist checklist = Optional.ofNullable(
-                    mongoTemplate.findOne(
+            //Find User Document
+            User user = mongoTemplate
+                .findOne(new Query().addCriteria(Criteria.where("username").is(username)), 
+                    User.class);
+
+            //User's Non-Grouped Checklists
+            List<Checklist> checklists = user.getChecklists();
+
+            //User's Are Limited to 20 (Non-Grouped) Checklists
+            if(checklists.size() <= 20) {
+                //Find Checklist By listId
+                Checklist checklist = Optional.ofNullable(
+                        mongoTemplate.findOne(
+                            query("listId", listId), 
+                            Checklist.class))
+                    .orElseThrow(() -> new ApiRequestException("Checklist Not Found"));
+
+                boolean grouplistExists = mongoTemplate.exists(query("groupId", groupId), Grouplist.class);
+                if(grouplistExists) {
+
+                    //Remove Checklist from Grouplist's 'checklists' attribute
+                    Grouplist grouplist = mongoTemplate.findAndModify(
+                        query("groupId", groupId), 
+                        pullUpdate("checklists", checklist), 
+                        options(true, true), 
+                        Grouplist.class);
+
+                    Checklist updatedChecklist = mongoTemplate.findAndModify(
                         query("listId", listId), 
-                        Checklist.class))
-                .orElseThrow(() -> new ApiRequestException("Checklist Not Found"));
+                        new Update().set("groupId", ""), 
+                        Checklist.class);
 
-            boolean grouplistExists = mongoTemplate.exists(query("groupId", groupId), Grouplist.class);
-            if(grouplistExists) {
-
-                //Remove Checklist from Grouplist's 'checklists' attribute
-                Grouplist grouplist = mongoTemplate.findAndModify(
-                    query("groupId", groupId), 
-                    pullUpdate("checklists", checklist), 
-                    options(true, true), 
-                    Grouplist.class);
-
-                Checklist updatedChecklist = mongoTemplate.findAndModify(
-                    query("listId", listId), 
-                    new Update().set("groupId", ""), 
-                    Checklist.class);
-
-                //Add Checklist to User's 'checklists' attribute
-                mongoTemplate.findAndModify(
-                        query("username", username), 
-                        pushUpdate("checklists", updatedChecklist), 
-                        User.class);
-                
-                return grouplist;
+                    //Add Checklist to User's 'checklists' attribute
+                    mongoTemplate.findAndModify(
+                            query("username", username), 
+                            pushUpdate("checklists", updatedChecklist), 
+                            User.class);
+                    
+                    return grouplist;
+                } else {
+                    throw new ApiRequestException("Grouplist Not Found");
+                }
             } else {
-                throw new ApiRequestException("Grouplist Not Found");
+                throw new ApiRequestException("User's Checklists Limit Exceeded: 20");
             }
         } else {
             throw new ApiRequestException("User Not Found");
@@ -321,6 +366,32 @@ public class GrouplistService {
     //Delete Grouplist || Void
     public void deleteGrouplist(String username, String groupId) {
         if(verifyUser(username)) {
+            //Find User Document
+            User user = mongoTemplate
+                .findOne(new Query().addCriteria(Criteria.where("username").is(username)), 
+                    User.class);
+
+            //Delete Grouplist From User Document
+            List<Grouplist> grouplists = user.getGrouplists();
+            grouplists.removeIf(grouplist -> grouplist.getGroupId().equals(groupId));
+            user.setGrouplists(grouplists);
+            mongoTemplate.save(user);
+
+            //Find Grouplist Getting Deleted
+            Grouplist grouplist = grouplistRepository
+                .findGrouplistByGroupId(groupId)
+                .orElseThrow(() -> new ApiRequestException("Grouplist Not Found"));
+
+            //Delete All Checklist Under Grouplist
+            List<Checklist> checklists = grouplist.getChecklists();
+            for(Checklist checklist : checklists) {
+                //Delete Checklist
+                mongoTemplate.findAndRemove(new Query()
+                        .addCriteria(Criteria.where("listId").is(checklist.getListId())), 
+                        Checklist.class); 
+            }
+
+            //Delete Grouplist
             grouplistRepository.deleteGrouplistByGroupId(groupId);
         } else {
             throw new ApiRequestException("User Not Found");
