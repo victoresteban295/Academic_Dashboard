@@ -1,339 +1,485 @@
-// package com.academicdashboard.backend.checklist;
-//
-// import java.util.ArrayList;
-// import java.util.List;
-//
-// import org.springframework.stereotype.Component;
-//
-// import com.academicdashboard.backend.user.User;
-// import com.academicdashboard.backend.user.UserRepository;
-//
-// import lombok.RequiredArgsConstructor;
-//
-// @Component
-// @RequiredArgsConstructor
-// public class TestData {
-//     /*
-//      * Grouplist's Id (2)
-//      *      - groupIdA 
-//      *      - groupIdB
-//      *
-//      * Checklist's Id (6)
-//      *      - listIdA1
-//      *      - listIdA2
-//      *      - listIdB1
-//      *      - listIdB2
-//      *      - listIdC1
-//      *      - listIdD
-//      *
-//      * Checkpoint's Id (12)
-//      *      - pointIdA11
-//      *      - pointIdA12
-//      *      - pointIdA21
-//      *      - pointIdA22
-//      *      - pointIdB11
-//      *      - pointIdB12
-//      *      - pointIdB21
-//      *      - pointIdB22
-//      *      - pointIdC11
-//      *      - pointIdC12
-//      *      - pointIdD1
-//      *      - pointIdD2
-//      *
-//      * Subcheckpoint's Id (6)
-//      *      - pointIdA11A
-//      *      - pointIdA11B
-//      *      - pointIdB11A
-//      *      - pointIdB11B
-//      *      - pointIdC11A
-//      *      - pointIdC11B
-//      * */
-//
-//     private final UserRepository userRepository;
-//     private final GrouplistRepository grouplistRepository;
-//     private final ChecklistRepository checklistRepository;
-//     private final CheckpointRepository checkpointRepository;
-//
-//     public void cleanupDatabase() {
-//         checkpointRepository.deleteAll();
-//         checklistRepository.deleteAll();
-//         grouplistRepository.deleteAll();
-//         userRepository.deleteAll();
-//     }
-//
-//     public void populateDatabase() {
-//
-//         Checkpoint subcheckpointA11A = checkpointRepository.insert(
-//                 Checkpoint.builder()
-//                 .pointId("pointIdA11A")
-//                 .content("ContentA11A")
-//                 .isComplete(false)
-//                 .isSubpoint(true)
-//                 .subCheckpoints(new ArrayList<>())
-//                 .build());
-//         Checkpoint subcheckpointA11B = checkpointRepository.insert(
-//                 Checkpoint.builder()
-//                 .pointId("pointIdA11B")
-//                 .content("ContentA11B")
-//                 .isComplete(false)
-//                 .isSubpoint(true)
-//                 .subCheckpoints(new ArrayList<>())
-//                 .build());
-//
-//         List<Checkpoint> A11Subcheckpoints = new ArrayList<>();
-//         A11Subcheckpoints.add(subcheckpointA11A);
-//         A11Subcheckpoints.add(subcheckpointA11B);
-//
-//         Checkpoint checkpointA11 = checkpointRepository.insert(
-//                 Checkpoint.builder()
-//                 .pointId("pointIdA11")
-//                 .content("ContentA11")
-//                 .isComplete(false)
-//                 .isSubpoint(false)
-//                 .subCheckpoints(A11Subcheckpoints)
-//                 .build());
-//         Checkpoint checkpointA12 = checkpointRepository.insert(
-//                 Checkpoint.builder()
-//                 .pointId("pointIdA12")
-//                 .content("ContentA12")
-//                 .isComplete(false)
-//                 .isSubpoint(false)
-//                 .subCheckpoints(new ArrayList<>())
-//                 .build());
-//
-//         List<Checkpoint> A1Checkpoints = new ArrayList<>();
-//         A1Checkpoints.add(checkpointA11);
-//         A1Checkpoints.add(checkpointA12);
-//
-//         Checklist checklistA1 = checklistRepository.insert(
-//                 Checklist.builder()
-//                 .listId("listIdA1")
-//                 .title("Checklist TitleA1")
-//                 .checkpoints(A1Checkpoints)
-//                 .build());
-//
-//         Checkpoint checkpointA21 = checkpointRepository.insert(
-//                 Checkpoint.builder()
-//                 .pointId("pointIdA21")
-//                 .content("ContentA21")
-//                 .isComplete(false)
-//                 .isSubpoint(false)
-//                 .subCheckpoints(new ArrayList<>())
-//                 .build());
-//         Checkpoint checkpointA22 = checkpointRepository.insert(
-//                 Checkpoint.builder()
-//                 .pointId("pointIdA22")
-//                 .content("ContentA22")
-//                 .isComplete(false)
-//                 .isSubpoint(false)
-//                 .subCheckpoints(new ArrayList<>())
-//                 .build());
-//
-//         List<Checkpoint> A2Checkpoints = new ArrayList<>();
-//         A2Checkpoints.add(checkpointA21);
-//         A2Checkpoints.add(checkpointA22);
-//
-//         Checklist checklistA2 = checklistRepository.insert(
-//                 Checklist.builder()
-//                 .listId("listIdA2")
-//                 .title("Checklist TitleA2")
-//                 .checkpoints(A2Checkpoints)
-//                 .build());
-//
-//         List<Checklist> AChecklist = new ArrayList<>();
-//         AChecklist.add(checklistA1);
-//         AChecklist.add(checklistA2);
-//
-//         Grouplist grouplistA = grouplistRepository.insert(
-//                 Grouplist.builder()
-//                 .groupId("groupIdA")
-//                 .title("Grouplist TitleA")
-//                 .checklists(AChecklist)
-//                 .build());
-//
-//         Checkpoint subcheckpointB11A = checkpointRepository.insert(
-//                 Checkpoint.builder()
-//                 .pointId("pointIdB11A")
-//                 .content("ContentB11A")
-//                 .isComplete(false)
-//                 .isSubpoint(true)
-//                 .subCheckpoints(new ArrayList<>())
-//                 .build());
-//         Checkpoint subcheckpointB11B = checkpointRepository.insert(
-//                 Checkpoint.builder()
-//                 .pointId("pointIdB11B")
-//                 .content("ContentB11B")
-//                 .isComplete(false)
-//                 .isSubpoint(true)
-//                 .subCheckpoints(new ArrayList<>())
-//                 .build());
-//
-//         List<Checkpoint> B11Subcheckpoints = new ArrayList<>();
-//         B11Subcheckpoints.add(subcheckpointB11A);
-//         B11Subcheckpoints.add(subcheckpointB11B);
-//
-//         Checkpoint checkpointB11 = checkpointRepository.insert(
-//                 Checkpoint.builder()
-//                 .pointId("pointIdB11")
-//                 .content("ContentB11")
-//                 .isComplete(false)
-//                 .isSubpoint(false)
-//                 .subCheckpoints(B11Subcheckpoints)
-//                 .build());
-//         Checkpoint checkpointB12 = checkpointRepository.insert(
-//                 Checkpoint.builder()
-//                 .pointId("pointIdB12")
-//                 .content("ContentB12")
-//                 .isComplete(false)
-//                 .isSubpoint(false)
-//                 .subCheckpoints(new ArrayList<>())
-//                 .build());
-//
-//         List<Checkpoint> B1Checkpoints = new ArrayList<>();
-//         B1Checkpoints.add(checkpointB11);
-//         B1Checkpoints.add(checkpointB12);
-//
-//         Checklist checklistB1 = checklistRepository.insert(
-//                 Checklist.builder()
-//                 .listId("listIdB1")
-//                 .title("Checklist TitleB1")
-//                 .checkpoints(B1Checkpoints)
-//                 .build());
-//
-//         Checkpoint checkpointB21 = checkpointRepository.insert(
-//                 Checkpoint.builder()
-//                 .pointId("pointIdB21")
-//                 .content("ContentB21")
-//                 .isComplete(false)
-//                 .isSubpoint(false)
-//                 .subCheckpoints(new ArrayList<>())
-//                 .build());
-//         Checkpoint checkpointB22 = checkpointRepository.insert(
-//                 Checkpoint.builder()
-//                 .pointId("pointIdB22")
-//                 .content("ContentB22")
-//                 .isComplete(false)
-//                 .isSubpoint(false)
-//                 .subCheckpoints(new ArrayList<>())
-//                 .build());
-//
-//         List<Checkpoint> B2Checkpoints = new ArrayList<>();
-//         B2Checkpoints.add(checkpointB21);
-//         B2Checkpoints.add(checkpointB22);
-//
-//         Checklist checklistB2 = checklistRepository.insert(
-//                 Checklist.builder()
-//                 .listId("listIdB2")
-//                 .title("Checklist TitleB2")
-//                 .checkpoints(B2Checkpoints)
-//                 .build());
-//
-//         List<Checklist> BChecklist = new ArrayList<>();
-//         BChecklist.add(checklistB1);
-//         BChecklist.add(checklistB2);
-//
-//         Grouplist grouplistB = grouplistRepository.insert(
-//                 Grouplist.builder()
-//                 .groupId("groupIdB")
-//                 .title("Grouplist TitleB")
-//                 .checklists(BChecklist)
-//                 .build());
-//
-//
-//
-//         Checkpoint subcheckpointC11A = checkpointRepository.insert(
-//                 Checkpoint.builder()
-//                 .pointId("pointIdC11A")
-//                 .content("ContentC11A")
-//                 .isComplete(false)
-//                 .isSubpoint(true)
-//                 .subCheckpoints(new ArrayList<>())
-//                 .build());
-//         Checkpoint subcheckpointC11B = checkpointRepository.insert(
-//                 Checkpoint.builder()
-//                 .pointId("pointIdC11B")
-//                 .content("ContentC11B")
-//                 .isComplete(false)
-//                 .isSubpoint(true)
-//                 .subCheckpoints(new ArrayList<>())
-//                 .build());
-//         List<Checkpoint> C11Subcheckpoints = new ArrayList<>();
-//         C11Subcheckpoints.add(subcheckpointC11A);
-//         C11Subcheckpoints.add(subcheckpointC11B);
-//
-//         Checkpoint checkpointC11 = checkpointRepository.insert(
-//                 Checkpoint.builder()
-//                 .pointId("pointIdC11")
-//                 .content("ContentC11")
-//                 .isComplete(false)
-//                 .isSubpoint(false)
-//                 .subCheckpoints(C11Subcheckpoints)
-//                 .build());
-//         Checkpoint checkpointC12 = checkpointRepository.insert(
-//                 Checkpoint.builder()
-//                 .pointId("pointIdC12")
-//                 .content("ContentC12")
-//                 .isComplete(false)
-//                 .isSubpoint(false)
-//                 .subCheckpoints(new ArrayList<>())
-//                 .build());
-//         List<Checkpoint> C1Checkpoints = new ArrayList<>();
-//         C1Checkpoints.add(checkpointC11);
-//         C1Checkpoints.add(checkpointC12);
-//         
-//         Checklist checklistC1 = checklistRepository.insert(
-//                 Checklist.builder()
-//                 .listId("listIdC1")
-//                 .title("Checklist TitleC1")
-//                 .checkpoints(C1Checkpoints)
-//                 .build());
-//
-//
-//         Checkpoint checkpointD1 = checkpointRepository.insert(
-//                 Checkpoint.builder()
-//                 .pointId("pointIdD1")
-//                 .content("ContentD1")
-//                 .isComplete(false)
-//                 .isSubpoint(false)
-//                 .subCheckpoints(new ArrayList<>())
-//                 .build());
-//         Checkpoint checkpointD2 = checkpointRepository.insert(
-//                 Checkpoint.builder()
-//                 .pointId("pointIdD2")
-//                 .content("ContentD2")
-//                 .isComplete(false)
-//                 .isSubpoint(false)
-//                 .subCheckpoints(new ArrayList<>())
-//                 .build());
-//         List<Checkpoint> DCheckpoints = new ArrayList<>();
-//         DCheckpoints.add(checkpointD1);
-//         DCheckpoints.add(checkpointD2);
-//
-//         Checklist checklistD = checklistRepository.insert(
-//                 Checklist.builder()
-//                 .listId("listIdD")
-//                 .title("Checklist TitleD")
-//                 .checkpoints(DCheckpoints)
-//                 .build());
-//
-//         List<Grouplist> grouplists = new ArrayList<>();
-//         grouplists.add(grouplistA);
-//         grouplists.add(grouplistB);
-//
-//         List<Checklist> checklists = new ArrayList<>();
-//         checklists.add(checklistC1);
-//         checklists.add(checklistD);
-//
-//         userRepository.insert(
-//                 User.builder()
-//                 .userId("ju7db63uy678erdybncpo")
-//                 .firstname("Test")
-//                 .lastname("User")
-//                 .email("testuser@email.com")
-//                 .username("testuser")
-//                 .checklists(checklists)
-//                 .grouplists(grouplists)
-//                 .build());
-//
-//     } 
-// }
+package com.academicdashboard.backend.checklist;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Component;
+
+import com.academicdashboard.backend.user.User;
+import com.academicdashboard.backend.user.UserRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Component
+@RequiredArgsConstructor
+public class TestData {
+
+    private final UserRepository userRepository;
+    private final GrouplistRepository grouplistRepository;
+    private final ChecklistRepository checklistRepository;
+
+    public void cleanupDatabase() {
+        checklistRepository.deleteAll();
+        grouplistRepository.deleteAll();
+        userRepository.deleteAll();
+    }
+
+    public void populateDatabase() {
+
+        /****************************************/
+        /* ********** Checkpoint A11 ********** */
+        /****************************************/
+        Checkpoint subpointA11A = Checkpoint.builder()
+                .index("0")
+                .content("ContentA11A")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+        Checkpoint subpointA11B = Checkpoint.builder()
+                .index("1")
+                .content("ContentA11B")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        List<Checkpoint> A11Subpoints = new ArrayList<>();
+        A11Subpoints.add(subpointA11A);
+        A11Subpoints.add(subpointA11B);
+
+        Checkpoint subpointA11C = Checkpoint.builder()
+                .index("0")
+                .content("ContentA11C")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+        Checkpoint subpointA11D = Checkpoint.builder()
+                .index("1")
+                .content("ContentA11D")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        List<Checkpoint> A11CompletedSubpoints = new ArrayList<>();
+        A11CompletedSubpoints.add(subpointA11C);
+        A11CompletedSubpoints.add(subpointA11D);
+
+        Checkpoint pointA11 = Checkpoint.builder()
+                .index("0")
+                .content("ContentA11")
+                .subpoints(A11Subpoints)
+                .completedSubpoints(A11CompletedSubpoints)
+                .build();
+
+
+        /****************************************/
+        /* ********** Checkpoint A12 ********** */
+        /****************************************/
+        Checkpoint pointA12 = Checkpoint.builder()
+                .index("1")
+                .content("ContentA12")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+
+        /****************************************/
+        /* ********** Checkpoint A13 ********** */
+        /****************************************/
+        Checkpoint pointA13 = Checkpoint.builder()
+                .index("0")
+                .content("ContentA13")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+
+        /****************************************/
+        /* ********** Checkpoint A14 ********** */
+        /****************************************/
+        Checkpoint subpointA14A = Checkpoint.builder()
+                .index("0")
+                .content("ContentA14A")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        Checkpoint subpointA14B = Checkpoint.builder()
+                .index("1")
+                .content("ContentA14B")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        List<Checkpoint> A14CompletedSubpoints = new ArrayList<>();
+        A14CompletedSubpoints.add(subpointA14A);
+        A14CompletedSubpoints.add(subpointA14B);
+
+        Checkpoint pointA14 = Checkpoint.builder()
+                .index("1")
+                .content("ContentA14")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(A14CompletedSubpoints)
+                .build();
+
+
+        /**************************************/
+        /* ********** Checklist A1 ********** */
+        /**************************************/
+        List<Checkpoint> A1Checkpoints = new ArrayList<>();
+        A1Checkpoints.add(pointA11);
+        A1Checkpoints.add(pointA12);
+
+        List<Checkpoint> A1CompletedPoints = new ArrayList<>();
+        A1CompletedPoints.add(pointA13);
+        A1CompletedPoints.add(pointA14);
+
+        Checklist checklistA1 = checklistRepository.insert(
+                Checklist.builder()
+                    .listId("listIdA1")
+                    .title("Checklist Title A1")
+                    .groupId("groupIdA")
+                    .checkpoints(A1Checkpoints)
+                    .completedPoints(A1CompletedPoints)
+                    .build());
+
+
+        /**************************************************/
+        /* ********** Checkpoint A21, A22, A23 ********** */
+        /**************************************************/
+        Checkpoint pointA21 = Checkpoint.builder()
+                .index("0")
+                .content("ContentA21")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        Checkpoint pointA22 = Checkpoint.builder()
+                .index("1")
+                .content("ContentA22")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        Checkpoint pointA23 = Checkpoint.builder()
+                .index("2")
+                .content("ContentA23")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+
+        /**************************************************/
+        /* ********** Checkpoint A24, A25, A26 ********** */
+        /**************************************************/
+        Checkpoint pointA24 = Checkpoint.builder()
+                .index("0")
+                .content("ContentA24")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        Checkpoint pointA25 = Checkpoint.builder()
+                .index("1")
+                .content("ContentA25")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        Checkpoint pointA26 = Checkpoint.builder()
+                .index("2")
+                .content("ContentA26")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+
+        /**************************************/
+        /* ********** Checklist A2 ********** */
+        /**************************************/
+        List<Checkpoint> A2Checkpoints = new ArrayList<>();
+        A2Checkpoints.add(pointA21);
+        A2Checkpoints.add(pointA22);
+        A2Checkpoints.add(pointA23);
+
+        List<Checkpoint> A2CompletedPoints = new ArrayList<>();
+        A2CompletedPoints.add(pointA24);
+        A2CompletedPoints.add(pointA25);
+        A2CompletedPoints.add(pointA26);
+
+        Checklist checklistA2 = checklistRepository.insert(
+                Checklist.builder()
+                    .listId("listIdA2")
+                    .title("Checklist Title A2")
+                    .groupId("groupIdA")
+                    .checkpoints(A2Checkpoints)
+                    .completedPoints(A2CompletedPoints)
+                    .build());
+
+
+        /*************************************/
+        /* ********** Grouplist A ********** */
+        /*************************************/
+        List<Checklist> AChecklist = new ArrayList<>();
+        AChecklist.add(checklistA1);
+        AChecklist.add(checklistA2);
+
+        Grouplist grouplistA = grouplistRepository.insert(
+                Grouplist.builder()
+                    .groupId("groupIdA")
+                    .title("Grouplist Title A")
+                    .checklists(AChecklist)
+                    .build());
+
+
+        /****************************************/
+        /* ********** Checkpoint B11 ********** */
+        /****************************************/
+        Checkpoint subpointB11A = Checkpoint.builder()
+                .index("0")
+                .content("ContentB11A")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        Checkpoint subpointB11B = Checkpoint.builder()
+                .index("1")
+                .content("ContentB11B")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        List<Checkpoint> B11Subpoints = new ArrayList<>();
+        B11Subpoints.add(subpointB11A);
+        B11Subpoints.add(subpointB11B);
+
+        Checkpoint subpointB11C = Checkpoint.builder()
+                .index("0")
+                .content("ContentB11C")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        List<Checkpoint> B11CompletedSubpoints = new ArrayList<>();
+        B11CompletedSubpoints.add(subpointB11C);
+
+        Checkpoint pointB11 = Checkpoint.builder()
+                .index("0")
+                .content("ContentB11")
+                .subpoints(B11Subpoints)
+                .completedSubpoints(B11CompletedSubpoints)
+                .build();
+
+
+        /****************************************/
+        /* ********** Checkpoint B12 ********** */
+        /****************************************/
+        Checkpoint subpointB12A = Checkpoint.builder()
+                .index("0")
+                .content("ContentB12A")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        Checkpoint subpointB12B = Checkpoint.builder()
+                .index("1")
+                .content("ContentB12B")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        Checkpoint subpointB12C = Checkpoint.builder()
+                .index("2")
+                .content("ContentB12C")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        List<Checkpoint> B12Subpoints = new ArrayList<>();
+        B12Subpoints.add(subpointB12A);
+        B12Subpoints.add(subpointB12B);
+        B12Subpoints.add(subpointB12C);
+
+        Checkpoint pointB12 = Checkpoint.builder()
+                .index("1")
+                .content("ContentB12")
+                .subpoints(B12Subpoints)
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+
+        /**************************************/
+        /* ********** Checklist B1 ********** */
+        /**************************************/
+        List<Checkpoint> B1Checkpoints = new ArrayList<>();
+        B1Checkpoints.add(pointB11);
+        B1Checkpoints.add(pointB12);
+
+        Checklist checklistB1 = checklistRepository.insert(
+                Checklist.builder()
+                    .listId("listIdB1")
+                    .title("Checklist Title B1")
+                    .groupId("groupIdB")
+                    .checkpoints(B1Checkpoints)
+                    .completedPoints(new ArrayList<>())
+                    .build());
+
+
+        /**************************************/
+        /* ********** Checklist B2 ********** */
+        /**************************************/
+        Checklist checklistB2 = checklistRepository.insert(
+                Checklist.builder()
+                    .listId("listIdB2")
+                    .title("Checklist Title B2")
+                    .groupId("groupIdB")
+                    .checkpoints(new ArrayList<>())
+                    .completedPoints(new ArrayList<>())
+                    .build());
+        
+
+        /*************************************/
+        /* ********** Grouplist B ********** */
+        /*************************************/
+        List<Checklist> BChecklist = new ArrayList<>();
+        BChecklist.add(checklistB1);
+        BChecklist.add(checklistB2);
+
+        Grouplist grouplistB = grouplistRepository.insert(
+                Grouplist.builder()
+                    .groupId("groupIdB")
+                    .title("Grouplist Title B")
+                    .checklists(BChecklist)
+                    .build());
+
+
+        /*******************************************************/
+        /* ********** Checkpoint C11, C12, C13, C14 ********** */
+        /*******************************************************/
+        Checkpoint pointC11 = Checkpoint.builder()
+                .index("0")
+                .content("ContentC11")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        Checkpoint pointC12 = Checkpoint.builder()
+                .index("1")
+                .content("ContentC12")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        Checkpoint pointC13 = Checkpoint.builder()
+                .index("2")
+                .content("ContentC13")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        Checkpoint pointC14 = Checkpoint.builder()
+                .index("3")
+                .content("ContentC14")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+
+        /**************************************/
+        /* ********** Checklist C1 ********** */
+        /**************************************/
+        List<Checkpoint> C1Checkpoints = new ArrayList<>();
+        C1Checkpoints.add(pointC11);
+        C1Checkpoints.add(pointC12);
+        C1Checkpoints.add(pointC13);
+        C1Checkpoints.add(pointC14);
+
+        Checklist checklistC1 = checklistRepository.insert(
+                Checklist.builder()
+                    .listId("listIdC1")
+                    .title("Checklist Title C1")
+                    .groupId("")
+                    .checkpoints(C1Checkpoints)
+                    .completedPoints(new ArrayList<>())
+                    .build());
+
+
+        /****************************************/
+        /* ********** Checkpoint D11 ********** */
+        /****************************************/
+        Checkpoint pointD11 = Checkpoint.builder()
+                .index("0")
+                .content("ContentD11")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+
+        /****************************************/
+        /* ********** Checkpoint D12 ********** */
+        /****************************************/
+        Checkpoint subpointD12A = Checkpoint.builder()
+                .index("0")
+                .content("ContentD12A")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        Checkpoint subpointD12B = Checkpoint.builder()
+                .index("1")
+                .content("ContentD12B")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        List<Checkpoint> D12CompletedSubpoints = new ArrayList<>();
+        D12CompletedSubpoints.add(subpointD12A);
+        D12CompletedSubpoints.add(subpointD12B);
+
+        Checkpoint pointD12 = Checkpoint.builder()
+                .index("1")
+                .content("ContentD12")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(D12CompletedSubpoints)
+                .build();
+        
+
+        /**************************************/
+        /* ********** Checklist D1 ********** */
+        /**************************************/
+        List<Checkpoint> D1CompletedPoints = new ArrayList<>();
+        D1CompletedPoints.add(pointD11);
+        D1CompletedPoints.add(pointD12);
+
+        Checklist checklistD1 = checklistRepository.insert(
+                Checklist.builder()
+                    .listId("listIdD1")
+                    .title("Checklist Title D1")
+                    .groupId("")
+                    .checkpoints(new ArrayList<>())
+                    .completedPoints(D1CompletedPoints)
+                    .build());
+
+        /**************************************/
+        /* ********** User Account ********** */
+        /**************************************/
+        List<Grouplist> grouplists = new ArrayList<>();
+        grouplists.add(grouplistA);
+        grouplists.add(grouplistB);
+
+        List<Checklist> checklists = new ArrayList<>();
+        checklists.add(checklistC1);
+        checklists.add(checklistD1);
+
+        userRepository.insert(
+                User.builder()
+                .userId("ju7db63uy678erdybncpo")
+                .firstname("Test")
+                .lastname("User")
+                .email("testuser@email.com")
+                .username("testuser")
+                .checklists(checklists)
+                .grouplists(grouplists)
+                .build());
+
+    } 
+}
