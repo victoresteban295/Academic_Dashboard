@@ -168,12 +168,161 @@ public class ChecklistControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$.checkpoints", Matchers.is(response.getCheckpoints())))
             .andExpect(MockMvcResultMatchers.jsonPath("$.completedPoints", Matchers.is(response.getCompletedPoints())));
     }
-//
-//     @Test
-//     @WithMockUser(username = "testuser", roles = {"STUDENT"})
-//     @DisplayName("Should Only Return 204 Status Code When Making DELETE request to endpoints - /api/stud/checklist/{username}/delete/{listId}")
-//     public void shouldDeleteExistingChecklist() throws Exception {
-//         mockMvc.perform(MockMvcRequestBuilders.delete("/api/stud/checklist/testuser/delete/12345"))
-//             .andExpect(MockMvcResultMatchers.status().is(204));
-//     }
+
+    @Test
+    @WithMockUser(username = "testuser", roles = {"STUDENT"})
+    @DisplayName("Should Return Checklist with Added Checkpoint When Makinga PUT request to endpoints - /api/checklist/{username}/modify/checkpoints/{listId}")
+    public void shouldAddCheckpointsToChecklist() throws Exception {
+
+        /* ********** Checkpoint A11 ********** */
+        Checkpoint subpointA11A = Checkpoint.builder()
+                .index("0")
+                .content("ContentA11A")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+        Checkpoint subpointA11B = Checkpoint.builder()
+                .index("1")
+                .content("ContentA11B")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        List<Checkpoint> A11Subpoints = new ArrayList<>();
+        A11Subpoints.add(subpointA11A);
+        A11Subpoints.add(subpointA11B);
+
+        Checkpoint subpointA11C = Checkpoint.builder()
+                .index("0")
+                .content("ContentA11C")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+        Checkpoint subpointA11D = Checkpoint.builder()
+                .index("1")
+                .content("ContentA11D")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        List<Checkpoint> A11CompletedSubpoints = new ArrayList<>();
+        A11CompletedSubpoints.add(subpointA11C);
+        A11CompletedSubpoints.add(subpointA11D);
+
+        Checkpoint pointA11 = Checkpoint.builder()
+                .index("0")
+                .content("ContentA11")
+                .subpoints(A11Subpoints)
+                .completedSubpoints(A11CompletedSubpoints)
+                .build();
+
+        /* ********** Checkpoint A12 ********** */
+        Checkpoint pointA12 = Checkpoint.builder()
+                .index("1")
+                .content("ContentA12")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        /* ********** Checkpoint A13 ********** */
+        Checkpoint pointA13 = Checkpoint.builder()
+                .index("0")
+                .content("ContentA13")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        /* ********** Checkpoint A14 ********** */
+        Checkpoint subpointA14A = Checkpoint.builder()
+                .index("0")
+                .content("ContentA14A")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        Checkpoint subpointA14B = Checkpoint.builder()
+                .index("1")
+                .content("ContentA14B")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(new ArrayList<>())
+                .build();
+
+        List<Checkpoint> A14CompletedSubpoints = new ArrayList<>();
+        A14CompletedSubpoints.add(subpointA14A);
+        A14CompletedSubpoints.add(subpointA14B);
+
+        Checkpoint pointA14 = Checkpoint.builder()
+                .index("1")
+                .content("ContentA14")
+                .subpoints(new ArrayList<>())
+                .completedSubpoints(A14CompletedSubpoints)
+                .build();
+
+        /**************************************/
+        /* ********** Checklist A1 ********** */
+        /**************************************/
+        List<Checkpoint> A1Checkpoints = new ArrayList<>();
+        A1Checkpoints.add(pointA11);
+        A1Checkpoints.add(pointA12);
+
+        List<Checkpoint> A1CompletedPoints = new ArrayList<>();
+        A1CompletedPoints.add(pointA13);
+        A1CompletedPoints.add(pointA14);
+
+        Checklist checklistA1 = Checklist.builder()
+                    .listId("listIdA1")
+                    .title("Checklist Title A1")
+                    .groupId("groupIdA")
+                    .checkpoints(A1Checkpoints)
+                    .completedPoints(A1CompletedPoints)
+                    .build();
+
+        //Request Body
+        record ReqBody (List<Checkpoint> checkpoints, List<Checkpoint> completedPoints) {}
+        ReqBody reqBody = new ReqBody(A1Checkpoints, A1CompletedPoints);
+
+        //Convert Request Body to Byte[]
+        ObjectMapper objectMapper = new ObjectMapper();
+        byte[] reqBodyAsByte = objectMapper.writeValueAsBytes(reqBody);
+
+        Mockito.when(checklistService.modifyCheckpoints("testuser", "listIdA1", A1Checkpoints, A1CompletedPoints))
+            .thenReturn(checklistA1);
+
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/checklist/testuser/modify/checkpoints/listIdA1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(reqBodyAsByte))
+            .andExpect(MockMvcResultMatchers.status().is(200))
+            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.listId", Matchers.is("listIdA1")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.title", Matchers.is("Checklist Title A1")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.groupId", Matchers.is("groupIdA")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.checkpoints[0].index", Matchers.is("0")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.checkpoints[0].content", Matchers.is("ContentA11")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.checkpoints[0].subpoints[0].index", Matchers.is("0")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.checkpoints[0].subpoints[0].content", Matchers.is("ContentA11A")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.checkpoints[0].subpoints[1].index", Matchers.is("1")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.checkpoints[0].subpoints[1].content", Matchers.is("ContentA11B")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.checkpoints[0].completedSubpoints[0].index", Matchers.is("0")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.checkpoints[0].completedSubpoints[0].content", Matchers.is("ContentA11C")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.checkpoints[0].completedSubpoints[1].index", Matchers.is("1")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.checkpoints[0].completedSubpoints[1].content", Matchers.is("ContentA11D")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.checkpoints[1].index", Matchers.is("1")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.checkpoints[1].content", Matchers.is("ContentA12")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.completedPoints[0].index", Matchers.is("0")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.completedPoints[0].content", Matchers.is("ContentA13")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.completedPoints[1].index", Matchers.is("1")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.completedPoints[1].content", Matchers.is("ContentA14")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.completedPoints[1].completedSubpoints[0].index", Matchers.is("0")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.completedPoints[1].completedSubpoints[0].content", Matchers.is("ContentA14A")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.completedPoints[1].completedSubpoints[1].index", Matchers.is("1")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.completedPoints[1].completedSubpoints[1].content", Matchers.is("ContentA14B")));
+    }
+
+    @Test
+    @WithMockUser(username = "testuser", roles = {"STUDENT"})
+    @DisplayName("Should Only Return 204 Status Code When Making DELETE request to endpoints - /api/stud/checklist/{username}/delete/{listId}")
+    public void shouldDeleteExistingChecklist() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/checklist/testuser/delete/listId01"))
+            .andExpect(MockMvcResultMatchers.status().is(204));
+    }
 }
