@@ -42,7 +42,7 @@ public class ChecklistService {
 
             //User's Are Limited to 20 (Non-Grouped) Checklists
             //Checklist Title Are Limited to 50 Characters & Cannot Be Empty
-            if(checklists.size() <= 20 && trimTitle.length() <= 50 && trimTitle.length() > 1) {
+            if(checklists.size() < 20 && trimTitle.length() <= 50 && trimTitle.length() > 1) {
                 //Create & Save Checklist
                 Checklist checklist = checklistRepository
                     .insert(Checklist.builder()
@@ -57,7 +57,7 @@ public class ChecklistService {
                 mongoTemplate.save(user); //Save Changes to User Document
                 return checklist;
             } else {
-                if(checklists.size() > 20) {
+                if(checklists.size() == 20) {
                     throw new ApiRequestException("User's Checklists Limit Exceeded: 20");
                 } else if(trimTitle.length() > 50) {
                     throw new ApiRequestException("Checklist's Title Cannot Exceed 50 Characters");
@@ -157,7 +157,7 @@ public class ChecklistService {
                 }
             }
         } else {
-            throw new ApiRequestException("Username Not Found");
+            throw new ApiRequestException("User Not Found");
         }
     }
 
@@ -205,7 +205,7 @@ public class ChecklistService {
                 .deleteChecklistByListId(listId);
 
         } else {
-            throw new ApiRequestException("Username Not Found");
+            throw new ApiRequestException("User Not Found");
         }
     }
 }
