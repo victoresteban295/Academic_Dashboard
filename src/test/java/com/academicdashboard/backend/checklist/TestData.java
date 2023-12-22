@@ -481,5 +481,34 @@ public class TestData {
                 .grouplists(grouplists)
                 .build());
 
+
+        List<Checklist> checklists01 = new ArrayList<>();
+        for(int i = 1; i <= 20; i++) {
+            String listId = "listId" + Integer.toString(i);
+            String title = "Checklist Title " + Integer.toString(i);
+
+            Checklist checklist01 = checklistRepository.insert(
+                    Checklist.builder()
+                        .listId(listId)
+                        .title(title)
+                        .groupId("")
+                        .checkpoints(new ArrayList<>())
+                        .completedPoints(new ArrayList<>())
+                        .build());
+
+            checklists01.add(checklist01);
+        }
+
+        userRepository.insert(
+                User.builder()
+                .userId("bw79b63ub67vendybnqpa")
+                .firstname("Test")
+                .lastname("User01")
+                .email("testuser01@email.com")
+                .username("testuser01")
+                .checklists(checklists01)
+                .grouplists(new ArrayList<>())
+                .build());
+
     } 
 }

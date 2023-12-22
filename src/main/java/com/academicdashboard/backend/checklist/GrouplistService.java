@@ -65,7 +65,7 @@ public class GrouplistService {
 
             //User's Are Limited to 20 Grouplists
             //Grouplist Title Are Limited to 20 Characters & Cannot Be Empty
-            if(grouplists.size() <= 20 && trimTitle.length() <= 20 && trimTitle.length() > 1) {
+            if(grouplists.size() < 20 && trimTitle.length() <= 20 && trimTitle.length() > 1) {
                 //Create Grouplist
                 Grouplist grouplist = grouplistRepository.insert(
                         Grouplist.builder()
@@ -82,16 +82,16 @@ public class GrouplistService {
                         User.class);
                 return grouplist;
             } else {
-                if(grouplists.size() > 20) {
+                if(grouplists.size() == 20) {
                     throw new ApiRequestException("User's Grouplists Limit Exceeded: 20");
                 } else if(trimTitle.length() > 20) {
-                    throw new ApiRequestException("Grouplist's Title Cannot Exceeded 20 Characters");
+                    throw new ApiRequestException("Grouplist's Title Cannot Exceed 20 Characters");
                 } else {
                     throw new ApiRequestException("Empty Grouplist's Title");
                 }
             }
         } else {
-            throw new ApiRequestException("Username Not Found");
+            throw new ApiRequestException("User Not Found");
         }
     }
 
@@ -99,7 +99,7 @@ public class GrouplistService {
     public Grouplist modifyTitle(String username, String groupId, String title) {
         if(verifyUser(username)) {
             String trimTitle = title.trim();
-            if(trimTitle.length() <= 50 && trimTitle.length() > 1) {
+            if(trimTitle.length() <= 20 && trimTitle.length() > 1) {
                 //Find Grouplist To Modify
                 Grouplist grouplist = grouplistRepository
                     .findGrouplistByGroupId(groupId)
@@ -108,7 +108,7 @@ public class GrouplistService {
                 return grouplistRepository.save(grouplist); //Save & Return Modified Grouplist
             } else {
                 if(trimTitle.length() > 20) {
-                    throw new ApiRequestException("Grouplist's Title Cannot Exceeded 20 Characters");
+                    throw new ApiRequestException("Grouplist's Title Cannot Exceed 20 Characters");
                 } else {
                     throw new ApiRequestException("Empty Grouplist's Title");
                 }
@@ -187,11 +187,11 @@ public class GrouplistService {
 
             List<Checklist> checklists = grouplist.getChecklists();
             String trimTitle = title.trim();
-            if(checklists.size() <= 20 && trimTitle.length() <= 50 && trimTitle.length() > 1) {
+            if(checklists.size() < 20 && trimTitle.length() <= 50 && trimTitle.length() > 1) {
                 //Create & Save Checklist
                 Checklist checklist = mongoTemplate.insert(Checklist.builder()
                         .listId(listId)
-                        .title(title)
+                        .title(trimTitle)
                         .groupId(groupId)
                         .checkpoints(new ArrayList<>())
                         .completedPoints(new ArrayList<>())
@@ -203,10 +203,10 @@ public class GrouplistService {
                     options(true, true), 
                     Grouplist.class);
             } else {
-                if(checklists.size() > 20) {
+                if(checklists.size() == 20) {
                     throw new ApiRequestException("Grouplist's Checklists Limit Exceeded: 20");
                 } else if(trimTitle.length() > 50) {
-                    throw new ApiRequestException("Checklist's Title Cannot Exceeded 50 Characters");
+                    throw new ApiRequestException("Checklist's Title Cannot Exceed 50 Characters");
                 } else {
                     throw new ApiRequestException("Empty Checklist's Title");
                 }
@@ -225,7 +225,7 @@ public class GrouplistService {
 
             //Each Grouplist is Limited to 20 Checklists
             List<Checklist> checklists = grouplist.getChecklists();
-            if(checklists.size() <= 20) {
+            if(checklists.size() < 20) {
                 //Find Existing Checklist
                 Checklist checklist = Optional.ofNullable(
                         mongoTemplate.findOne(
@@ -273,7 +273,7 @@ public class GrouplistService {
                     .orElseThrow(() -> new ApiRequestException("Grouplist Not Found"));
 
                 List<Checklist> toChecklists = toGrouplist.getChecklists();
-                if(toChecklists.size() <= 20) {
+                if(toChecklists.size() < 20) {
                     //Find Existing Checklist
                     Checklist checklist = Optional.ofNullable(
                             mongoTemplate.findOne(
@@ -322,7 +322,7 @@ public class GrouplistService {
             List<Checklist> checklists = user.getChecklists();
 
             //User's Are Limited to 20 (Non-Grouped) Checklists
-            if(checklists.size() <= 20) {
+            if(checklists.size() < 20) {
                 //Find Checklist By listId
                 Checklist checklist = Optional.ofNullable(
                         mongoTemplate.findOne(

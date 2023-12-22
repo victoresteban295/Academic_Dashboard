@@ -60,7 +60,7 @@ public class ChecklistService {
                 if(checklists.size() > 20) {
                     throw new ApiRequestException("User's Checklists Limit Exceeded: 20");
                 } else if(trimTitle.length() > 50) {
-                    throw new ApiRequestException("Checklist's Title Cannot Exceeded 50 Characters");
+                    throw new ApiRequestException("Checklist's Title Cannot Exceed 50 Characters");
                 } else {
                     throw new ApiRequestException("Empty Checklist's Title");
                 }
@@ -115,7 +115,7 @@ public class ChecklistService {
                 return checklistRepository.save(checklist); //Save Modified Checklist
             } else {
                 if(trimTitle.length() > 50) {
-                    throw new ApiRequestException("Checklist's Title Cannot Exceeded 50 Characters");
+                    throw new ApiRequestException("Checklist's Title Cannot Exceed 50 Characters");
                 } else {
                     throw new ApiRequestException("Empty Checklist's Title");
                 }
