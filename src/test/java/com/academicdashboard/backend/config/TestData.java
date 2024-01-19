@@ -1,10 +1,15 @@
-package com.academicdashboard.backend.checklist;
+package com.academicdashboard.backend.config;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import com.academicdashboard.backend.checklist.Checklist;
+import com.academicdashboard.backend.checklist.ChecklistRepository;
+import com.academicdashboard.backend.checklist.Checkpoint;
+import com.academicdashboard.backend.checklist.Grouplist;
+import com.academicdashboard.backend.checklist.GrouplistRepository;
 import com.academicdashboard.backend.user.User;
 import com.academicdashboard.backend.user.UserRepository;
 
@@ -135,6 +140,7 @@ public class TestData {
 
         Checklist checklistA1 = checklistRepository.insert(
                 Checklist.builder()
+                    .username("testuser")
                     .listId("listIdA1")
                     .title("Checklist Title A1")
                     .groupId("groupIdA")
@@ -208,6 +214,7 @@ public class TestData {
 
         Checklist checklistA2 = checklistRepository.insert(
                 Checklist.builder()
+                    .username("testuser")
                     .listId("listIdA2")
                     .title("Checklist Title A2")
                     .groupId("groupIdA")
@@ -225,6 +232,7 @@ public class TestData {
 
         Grouplist grouplistA = grouplistRepository.insert(
                 Grouplist.builder()
+                    .username("testuser")
                     .groupId("groupIdA")
                     .title("Grouplist Title A")
                     .checklists(AChecklist)
@@ -316,6 +324,7 @@ public class TestData {
 
         Checklist checklistB1 = checklistRepository.insert(
                 Checklist.builder()
+                    .username("testuser")
                     .listId("listIdB1")
                     .title("Checklist Title B1")
                     .groupId("groupIdB")
@@ -329,6 +338,7 @@ public class TestData {
         /**************************************/
         Checklist checklistB2 = checklistRepository.insert(
                 Checklist.builder()
+                    .username("testuser")
                     .listId("listIdB2")
                     .title("Checklist Title B2")
                     .groupId("groupIdB")
@@ -346,6 +356,7 @@ public class TestData {
 
         Grouplist grouplistB = grouplistRepository.insert(
                 Grouplist.builder()
+                    .username("testuser")
                     .groupId("groupIdB")
                     .title("Grouplist Title B")
                     .checklists(BChecklist)
@@ -395,6 +406,7 @@ public class TestData {
 
         Checklist checklistC1 = checklistRepository.insert(
                 Checklist.builder()
+                    .username("testuser")
                     .listId("listIdC1")
                     .title("Checklist Title C1")
                     .groupId("")
@@ -452,6 +464,7 @@ public class TestData {
 
         Checklist checklistD1 = checklistRepository.insert(
                 Checklist.builder()
+                    .username("testuser")
                     .listId("listIdD1")
                     .title("Checklist Title D1")
                     .groupId("")
@@ -482,6 +495,9 @@ public class TestData {
                 .build());
 
 
+        /**************************************/
+        /* User With Checklists Limit Reached */
+        /**************************************/
         List<Checklist> checklists01 = new ArrayList<>();
         for(int i = 1; i <= 20; i++) {
             String listId = "listId" + Integer.toString(i);
@@ -489,6 +505,7 @@ public class TestData {
 
             Checklist checklist01 = checklistRepository.insert(
                     Checklist.builder()
+                        .username("testuser01")
                         .listId(listId)
                         .title(title)
                         .groupId("")
@@ -499,6 +516,15 @@ public class TestData {
             checklists01.add(checklist01);
         }
 
+        List<Grouplist> grouplists01 = new ArrayList<>();
+        Grouplist grouplist01 = Grouplist.builder()
+            .username("testuser01")
+            .groupId("groupId01")
+            .title("Grouplist Title 01")
+            .checklists(new ArrayList<>())
+            .build();
+        grouplists01.add(grouplist01);
+
         userRepository.insert(
                 User.builder()
                 .userId("bw79b63ub67vendybnqpa")
@@ -507,7 +533,7 @@ public class TestData {
                 .email("testuser01@email.com")
                 .username("testuser01")
                 .checklists(checklists01)
-                .grouplists(new ArrayList<>())
+                .grouplists(grouplists01)
                 .build());
 
     } 

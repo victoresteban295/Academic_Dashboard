@@ -21,6 +21,7 @@ public class Grouplist {
 
     @Id
     private ObjectId id; //MongoDB ObjectId
+    private String username; //Owner's Username
 
     //Grouplist's Details
     private String groupId;

@@ -28,9 +28,9 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> {
-                auth.requestMatchers("/api/auth/**").permitAll();
-                auth.requestMatchers("/api/prof/**").hasRole("PROFESSOR");
-                auth.requestMatchers("/api/stud/**").hasAnyRole("STUDENT", "PROFESSOR");
+                auth.requestMatchers("/v1.0/auth/**").permitAll();
+                auth.requestMatchers("/v1.0/prof/**").hasRole("PROFESSOR");
+                auth.requestMatchers("/v1.0/stud/**").hasAnyRole("STUDENT", "PROFESSOR");
                 auth.anyRequest().authenticated();
             });
 
@@ -43,7 +43,7 @@ public class SecurityConfig {
 
         http
             .logout(logout -> logout
-                    .logoutUrl("/api/auth/logout")
+                    .logoutUrl("/v1.0/auth/logout")
                     .addLogoutHandler(logoutHandler)
                     .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext()));
             

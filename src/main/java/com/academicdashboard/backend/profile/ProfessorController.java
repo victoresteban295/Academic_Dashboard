@@ -10,13 +10,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import lombok.RequiredArgsConstructor;
 
 @Controller
-@RequestMapping("/api/profile/professor")
+@RequestMapping("/v1.0/professors")
 @RequiredArgsConstructor
 public class ProfessorController {
 
     private final ProfessorService professorService;
 
-    @GetMapping("get/{username}")
+    @GetMapping("/{username}")
     public ResponseEntity<Professor> getProfessorProfile(
             @PathVariable String username) {
 

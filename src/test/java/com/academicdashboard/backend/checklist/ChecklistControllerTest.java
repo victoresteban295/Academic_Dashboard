@@ -49,10 +49,11 @@ public class ChecklistControllerTest {
 
     @Test
     @WithMockUser(username = "testuser", roles = {"STUDENT"})
-    @DisplayName("Should Return Newly Created Checklist When Making POST request to endpoints - /api/checklist/{username}/new")
+    @DisplayName("Should Return Newly Created Checklist When Making POST request to endpoints - /v1.0/users/{username}/checklists")
     public void shouldCreateNewChecklist() throws Exception {
         //Mocked Response
         Checklist response = Checklist.builder()
+            .username("testuser")
             .listId("0123456789")
             .title("Checklist Title")
             .groupId("")
@@ -72,11 +73,12 @@ public class ChecklistControllerTest {
         ObjectMapper objectMapper = new ObjectMapper();
         byte[] reqBodyAsByte = objectMapper.writeValueAsBytes(reqBody);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/checklist/testuser/new")
+        mockMvc.perform(MockMvcRequestBuilders.post("/v1.0/users/testuser/checklists")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(reqBodyAsByte))
             .andExpect(MockMvcResultMatchers.status().is(201))
             .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.username", Matchers.is("testuser")))
             .andExpect(MockMvcResultMatchers.jsonPath("$.listId", Matchers.is("0123456789")))
             .andExpect(MockMvcResultMatchers.jsonPath("$.title", Matchers.is("Checklist Title")))
             .andExpect(MockMvcResultMatchers.jsonPath("$.groupId", Matchers.is("")));
@@ -84,69 +86,10 @@ public class ChecklistControllerTest {
 
     @Test
     @WithMockUser(username = "testuser", roles = {"STUDENT"})
-    @DisplayName("Should Return Reordered Checklist When Making PUT request to endpoints - /api/checklist/{username}/reorder")
-    public void shouldReorderChecklists() throws Exception {
-        //Mocked Response
-        Checklist checklist01 = Checklist.builder()
-            .listId("listId01")
-            .title("Checklist Title 01")
-            .groupId("")
-            .checkpoints(new ArrayList<>())
-            .completedPoints(new ArrayList<>())
-            .build();
-        Checklist checklist02 = Checklist.builder()
-            .listId("listId02")
-            .title("Checklist Title 02")
-            .groupId("")
-            .checkpoints(new ArrayList<>())
-            .completedPoints(new ArrayList<>())
-            .build();
-        Checklist checklist03 = Checklist.builder()
-            .listId("listId03")
-            .title("Checklist Title 03")
-            .groupId("")
-            .checkpoints(new ArrayList<>())
-            .completedPoints(new ArrayList<>())
-            .build();
-        List<Checklist> checklists = new ArrayList<>();
-        checklists.add(checklist01);
-        checklists.add(checklist02);
-        checklists.add(checklist03);
-
-
-        //Request Body
-        record ReqBody (List<Checklist> checklists) {}
-        ReqBody reqBody = new ReqBody(checklists);
-
-        //Convert Request Body to Byte[]
-        ObjectMapper objectMapper = new ObjectMapper();
-        byte[] reqBodyAsByte = objectMapper.writeValueAsBytes(reqBody);
-
-        //Mock Service Class
-        Mockito.when(checklistService.reorderChecklist("testuser", checklists))
-            .thenReturn(checklists);
-
-        mockMvc.perform(MockMvcRequestBuilders.put("/api/checklist/testuser/reorder")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(reqBodyAsByte))
-            .andExpect(MockMvcResultMatchers.status().is(200))
-            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].listId", Matchers.is("listId01")))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].title", Matchers.is("Checklist Title 01")))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].groupId", Matchers.is("")))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[1].listId", Matchers.is("listId02")))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[1].title", Matchers.is("Checklist Title 02")))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[1].groupId", Matchers.is("")))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[2].listId", Matchers.is("listId03")))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[2].title", Matchers.is("Checklist Title 03")))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[2].groupId", Matchers.is("")));
-    }
-
-    @Test
-    @WithMockUser(username = "testuser", roles = {"STUDENT"})
-    @DisplayName("Should Return Modified Checklist When Making PUT request to endpoints - /api/stud/checklist/{username}/modify/{listId}")
+    @DisplayName("Should Return Modified Checklist When Making PATCH request to endpoints - /v1.0/checklists/{listId}")
     public void shouldModifyChecklistTitle() throws Exception {
         Checklist response = Checklist.builder()
+            .username("username")
             .listId("0123456789")
             .title("New Checklist Title")
             .groupId("")
@@ -154,14 +97,15 @@ public class ChecklistControllerTest {
             .completedPoints(new ArrayList<>())
             .build();
 
-        Mockito.when(checklistService.modifyTitle("testuser", "0123456789", "New Checklist Title"))
+        Mockito.when(checklistService.editTitle("0123456789", "New Checklist Title"))
             .thenReturn(response);
 
-        mockMvc.perform(MockMvcRequestBuilders.put("/api/checklist/testuser/modify/title/0123456789")
+        mockMvc.perform(MockMvcRequestBuilders.patch("/v1.0/checklists/0123456789")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"title\": \"New Checklist Title\"}"))
             .andExpect(MockMvcResultMatchers.status().is(200))
             .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.username", Matchers.is(response.getUsername())))
             .andExpect(MockMvcResultMatchers.jsonPath("$.listId", Matchers.is(response.getListId())))
             .andExpect(MockMvcResultMatchers.jsonPath("$.title", Matchers.is(response.getTitle())))
             .andExpect(MockMvcResultMatchers.jsonPath("$.groupId", Matchers.is(response.getGroupId())))
@@ -171,7 +115,7 @@ public class ChecklistControllerTest {
 
     @Test
     @WithMockUser(username = "testuser", roles = {"STUDENT"})
-    @DisplayName("Should Return Checklist with Added Checkpoint When Makinga PUT request to endpoints - /api/checklist/{username}/modify/checkpoints/{listId}")
+    @DisplayName("Should Return Checklist with Added Checkpoint When Makinga PATCH request to endpoints - /v1.0/checklists/{listId}/checkpoints")
     public void shouldAddCheckpointsToChecklist() throws Exception {
 
         /* ********** Checkpoint A11 ********** */
@@ -270,6 +214,7 @@ public class ChecklistControllerTest {
         A1CompletedPoints.add(pointA14);
 
         Checklist checklistA1 = Checklist.builder()
+                    .username("testuser")
                     .listId("listIdA1")
                     .title("Checklist Title A1")
                     .groupId("groupIdA")
@@ -285,14 +230,15 @@ public class ChecklistControllerTest {
         ObjectMapper objectMapper = new ObjectMapper();
         byte[] reqBodyAsByte = objectMapper.writeValueAsBytes(reqBody);
 
-        Mockito.when(checklistService.modifyCheckpoints("testuser", "listIdA1", A1Checkpoints, A1CompletedPoints))
+        Mockito.when(checklistService.editCheckpoints("listIdA1", A1Checkpoints, A1CompletedPoints))
             .thenReturn(checklistA1);
 
-        mockMvc.perform(MockMvcRequestBuilders.put("/api/checklist/testuser/modify/checkpoints/listIdA1")
+        mockMvc.perform(MockMvcRequestBuilders.patch("/v1.0/checklists/listIdA1/checkpoints")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(reqBodyAsByte))
             .andExpect(MockMvcResultMatchers.status().is(200))
             .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.username", Matchers.is("testuser")))
             .andExpect(MockMvcResultMatchers.jsonPath("$.listId", Matchers.is("listIdA1")))
             .andExpect(MockMvcResultMatchers.jsonPath("$.title", Matchers.is("Checklist Title A1")))
             .andExpect(MockMvcResultMatchers.jsonPath("$.groupId", Matchers.is("groupIdA")))
@@ -320,9 +266,44 @@ public class ChecklistControllerTest {
 
     @Test
     @WithMockUser(username = "testuser", roles = {"STUDENT"})
-    @DisplayName("Should Only Return 204 Status Code When Making DELETE request to endpoints - /api/stud/checklist/{username}/delete/{listId}")
+    @DisplayName("Should Return Checklist with New Grouplist When Making PATCH Request to endpoitns - /v1.0/checklists/{listId}/grouplists")
+    public void shouldEditChecklistsGrouplist() throws Exception {
+        Checklist checklist = Checklist.builder()
+            .username("testuser")
+            .listId("listId01")
+            .title("Checklist Title 01")
+            .groupId("groupIdA")
+            .checkpoints(new ArrayList<>())
+            .completedPoints(new ArrayList<>())
+            .build();
+
+        Mockito.when(checklistService.editGrouplist("listId01", "groupIdA"))
+            .thenReturn(checklist);
+
+        //Request Body
+        record ReqBody (String groupId) {}
+        ReqBody reqBody = new ReqBody("groupIdA");
+
+        //Convert Request Body to Byte[]
+        ObjectMapper objectMapper = new ObjectMapper();
+        byte[] reqBodyAsByte = objectMapper.writeValueAsBytes(reqBody);
+
+        mockMvc.perform(MockMvcRequestBuilders.patch("/v1.0/checklists/listId01/grouplists")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(reqBodyAsByte))
+            .andExpect(MockMvcResultMatchers.status().is(200))
+            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.username", Matchers.is("testuser")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.listId", Matchers.is("listId01")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.title", Matchers.is("Checklist Title 01")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.groupId", Matchers.is("groupIdA")));
+    }
+
+    @Test
+    @WithMockUser(username = "testuser", roles = {"STUDENT"})
+    @DisplayName("Should Only Return 204 Status Code When Making DELETE request to endpoints - /v1.0/checklists/{listId}")
     public void shouldDeleteExistingChecklist() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/checklist/testuser/delete/listId01"))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/v1.0/checklists/listId01"))
             .andExpect(MockMvcResultMatchers.status().is(204));
     }
 }

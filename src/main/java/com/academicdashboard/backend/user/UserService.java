@@ -106,6 +106,9 @@ public class UserService {
     //Reorder User's Checklists || Return List<Checklist> 
     public List<Checklist> reorderChecklists(String username, List<Checklist> reorderChecklists) {
         if(verifyUser(username)) {
+            //User's Limited to 20 Checklists
+            if(reorderChecklists.size() > 20) throw new ApiRequestException("User's Checklists Limit Exceeded: 20");
+
             //Find User & Update Checklist
             User user = userRepository
                 .findUserByUsername(username)
@@ -113,10 +116,16 @@ public class UserService {
 
             //Reorder Checklists
             List<Checklist> checklists = new ArrayList<>(); //Updated Checklists
-            for(Checklist checklist : reorderChecklists) {
-                checklists.add(mongoTemplate.findOne(
-                            query("listId", checklist.getListId()), 
-                            Checklist.class)); 
+            for(Checklist list : reorderChecklists) {
+                Checklist checklist = mongoTemplate.findOne(
+                            query("listId", list.getListId()), 
+                            Checklist.class); 
+                if(checklist == null) throw new ApiRequestException("Checklist Not Found");
+
+                //Ensure Checklist Belongs to User and is Non-Grouped
+                if(checklist.getUsername().equals(username) && checklist.getGroupId().equals("")) {
+                    checklists.add(checklist);
+                } else throw new ApiRequestException("Checklist Not Found");
             }
 
             //Update & Save User with Updated Checklist
@@ -131,6 +140,9 @@ public class UserService {
     //Reorder User's Grouplists || Return List<Grouplist>
     public List<Grouplist> reorderGrouplists(String username, List<Grouplist> reorderGrouplists) {
         if(verifyUser(username)) {
+            //User's Limited to 20 Grouplists
+            if(reorderGrouplists.size() > 20) throw new ApiRequestException("User's Grouplist Limit Exceeded: 20");
+
             //Find User & Update Grouplist
             User user = userRepository
                 .findUserByUsername(username)
@@ -139,9 +151,16 @@ public class UserService {
             //Reorder Grouplists
             List<Grouplist> grouplists = new ArrayList<>(); //Updated Grouplists
             for(Grouplist grouplist : reorderGrouplists) {
-                grouplists.add(mongoTemplate.findOne(
+                Grouplist group = mongoTemplate.findOne(
                             query("groupId", grouplist.getGroupId()), 
-                            Grouplist.class)); 
+                            Grouplist.class); 
+                //Grouplist Not Found
+                if(group == null) throw new ApiRequestException("Grouplist Not Found");
+
+                //Ensure Grouplist Belongs to User
+                if(group.getUsername().equals(username)) {
+                    grouplists.add(group); 
+                } else throw new ApiRequestException("Grouplist Not Found");
             }
 
             //Update & Save User with Updated Grouplist

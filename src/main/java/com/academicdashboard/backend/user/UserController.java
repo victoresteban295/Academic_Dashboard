@@ -1,13 +1,14 @@
 package com.academicdashboard.backend.user;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -17,28 +18,18 @@ import com.academicdashboard.backend.checklist.Grouplist;
 import lombok.RequiredArgsConstructor;
 
 @Controller
-@RequestMapping("/api")
+@RequestMapping("/v1.0")
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
-
-    // @GetMapping("user/profile/{role}/{username}")
-    // public ResponseEntity<User> getUserDetails(
-    //         @PathVariable String username, 
-    //         @PathVariable String role) {
-    //
-    //     return new ResponseEntity<User>(
-    //             userService.getUserDetails(username, role), 
-    //             HttpStatus.OK);
-    // }
     
     /***********************************/
     /* ********** Checklist ********** */
     /***********************************/
 
     //Get User's Checklists || Return List<Checklist>
-    @GetMapping("/{username}/get/checklists")
+    @GetMapping("/users/{username}/checklists")
     public ResponseEntity<List<Checklist>> getChecklists(
             @PathVariable String username) {
 
@@ -48,7 +39,7 @@ public class UserController {
     }
 
     //Get User's Grouplists || Return List<Grouplist> 
-    @GetMapping("/{username}/get/grouplists")
+    @GetMapping("/users/{username}/grouplists")
     public ResponseEntity<List<Grouplist>> getGrouplists(
             @PathVariable String username) {
 
@@ -58,7 +49,7 @@ public class UserController {
     }
 
     //Get All User's Checklists || Return List<Checklist>
-    @GetMapping("/{username}/get/all/checklists")
+    @GetMapping("/users/{username}/all/checklists")
     public ResponseEntity<List<Checklist>> getAllChecklists(
             @PathVariable String username) {
 
@@ -68,28 +59,28 @@ public class UserController {
     }
 
     //Reorder User's Checklists || Return List<Checklist> 
-    @PutMapping("/{username}/reorder/checklists") 
+    @PatchMapping("/users/{username}/checklists") 
     public ResponseEntity<List<Checklist>> reorderChecklists(
             @PathVariable String username, 
-            @RequestBody List<Checklist> reorderChecklists) {
+            @RequestBody Map<String, List<Checklist>> payload) {
 
         return new ResponseEntity<List<Checklist>>(
                 userService.reorderChecklists(
                     username, 
-                    reorderChecklists), 
+                    payload.get("checklists")), 
                 HttpStatus.OK);
     }
 
     //Reorder User's Grouplists || Return List<Grouplist>
-    @PutMapping("/{username}/reorder/grouplists") 
+    @PatchMapping("/users/{username}/grouplists")
     public ResponseEntity<List<Grouplist>> reorderGrouplists(
             @PathVariable String username, 
-            @RequestBody List<Grouplist> reorderGrouplists) {
+            @RequestBody Map<String, List<Grouplist>> payload) {
 
         return new ResponseEntity<List<Grouplist>>(
                 userService.reorderGrouplists(
                     username, 
-                    reorderGrouplists), 
+                    payload.get("grouplists")), 
                 HttpStatus.OK);
     }
 
@@ -97,19 +88,19 @@ public class UserController {
     /* ********** Authenticate ********** */
     /**************************************/
 
-    @GetMapping("/auth/username/taken/{username}")
+    @GetMapping("/auth/username/{username}")
     public ResponseEntity<Void> usernameExist(@PathVariable String username) {
         userService.usernameExist(username);
         return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
     }
 
-    @GetMapping("/auth/email/taken/{email}")
+    @GetMapping("/auth/email/{email}")
     public ResponseEntity<Void> emailExist(@PathVariable String email) {
         userService.emailExist(email);
         return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
     }
 
-    @GetMapping("/auth/phone/taken/{phone}")
+    @GetMapping("/auth/phone/{phone}")
     public ResponseEntity<Void> phoneExist(@PathVariable String phone) {
         userService.phoneExist(phone);
         return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);

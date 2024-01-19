@@ -20,6 +20,7 @@ public class Checklist {
 
     @Id
     private ObjectId id; //MongoDB ObjectId
+    private String username; //Owner's Username
     
     //CheckList's Details
     private String listId; //Used for Queries (JNanoId)

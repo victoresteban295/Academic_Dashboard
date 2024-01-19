@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/v1.0/auth")
 @RequiredArgsConstructor
 public class AuthenticationController {
 
@@ -26,16 +26,6 @@ public class AuthenticationController {
         authenticationService.register(request);
         return new ResponseEntity<Void>(HttpStatus.CREATED);
     }
-
-    // @PostMapping("/authenticate")
-    // public ResponseEntity<AuthenticationResponse> authenticateStudent(
-    //         @RequestBody AuthenticationRequest request) {
-    //
-    //     return new ResponseEntity<AuthenticationResponse>(
-    //             authenticationService.authenticate(request), 
-    //             HttpStatus.OK);
-    // }
-
 
     @PostMapping("/authenticate")
     public ResponseEntity<Authorize> authenticateUser(
@@ -59,11 +49,6 @@ public class AuthenticationController {
             .httpOnly(true)
             .path("/")
             .build();
-        // ResponseCookie refreshCookie = ResponseCookie
-        //     .from("refreshToken", authResponse.getRefreshToken())
-        //     .httpOnly(true)
-        //     .path("/")
-        //     .build();
         ResponseCookie accessCookie = ResponseCookie
             .from("accessToken", authResponse.getAccessToken())
             .httpOnly(true)
@@ -75,65 +60,16 @@ public class AuthenticationController {
         return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, userCookie.toString())
             .header(HttpHeaders.SET_COOKIE, roleCookie.toString())
-            // .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
             .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
             .body(authorize);
     }
 
-    // @PostMapping("/refresh-token")
-    // public ResponseEntity<Authorize> refreshToken(
-    //         @CookieValue(name = "username") String username,
-    //         @CookieValue(name = "role") String role,
-    //         @CookieValue(name = "refreshToken") String refreshToken) {
-    //
-    //
-    //     AuthenticationResponse authResponse = authenticationService
-    //         .refreshToken(username, role, refreshToken);
-    //
-    //     String authRole;
-    //     if(role.equals("PROFESSOR")) {
-    //         authRole = "professor";
-    //     } else {
-    //         authRole = "student";
-    //     }
-    //
-    //     ResponseCookie userCookie = ResponseCookie
-    //         .from("username", authResponse.getUsername())
-    //         .httpOnly(true)
-    //         .path("/")
-    //         .build();
-    //     ResponseCookie roleCookie = ResponseCookie
-    //         .from("role", authResponse.getRole())
-    //         .httpOnly(true)
-    //         .path("/")
-    //         .build();
-    //     ResponseCookie refreshCookie = ResponseCookie
-    //         .from("refreshToken", authResponse.getRefreshToken())
-    //         .httpOnly(true)
-    //         .path("/")
-    //         .build();
-    //     ResponseCookie accessCookie = ResponseCookie
-    //         .from("accessToken", authResponse.getAccessToken())
-    //         .httpOnly(true)
-    //         .path("/")
-    //         .build();
-    //
-    //     Authorize authorize = new Authorize(username, authRole);
-    //
-    //     return ResponseEntity.ok()
-    //         .header(HttpHeaders.SET_COOKIE, userCookie.toString())
-    //         .header(HttpHeaders.SET_COOKIE, roleCookie.toString())
-    //         .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
-    //         .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
-    //         .body(authorize);
-    // }
 
-    @PostMapping("/valid/access-token")
+    @PostMapping("/validate/access-token")
     public ResponseEntity<Authorize> isAccessTokenValid(
             @CookieValue(name = "username") String username,
             @CookieValue(name = "role") String role,
             @CookieValue(name = "accessToken") String accessToken) {
-
 
         authenticationService.isAccessTokenValid(
                 username, 

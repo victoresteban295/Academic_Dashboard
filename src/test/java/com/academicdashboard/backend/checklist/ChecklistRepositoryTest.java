@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import com.academicdashboard.backend.config.TestData;
 import com.academicdashboard.backend.user.UserRepository;
 
 @Testcontainers 
