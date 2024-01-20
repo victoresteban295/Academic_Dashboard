@@ -56,7 +56,7 @@ public class DepartmentController {
         return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
     } 
     
-    @PostMapping("/departments/{deptId}/majors")
+    @PatchMapping("/departments/{deptId}/majors")
     public ResponseEntity<Department> createMajor(
             @PathVariable String deptId,
             @RequestBody Map<String, String> payload) {

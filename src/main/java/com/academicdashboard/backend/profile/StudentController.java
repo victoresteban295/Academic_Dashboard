@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import lombok.RequiredArgsConstructor;
 
 @Controller
-@RequestMapping("/v1.0/students")
+@RequestMapping("/v1.0/profiles/student")
 @RequiredArgsConstructor
 public class StudentController {
 
