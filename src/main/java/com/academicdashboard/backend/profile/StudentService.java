@@ -16,6 +16,17 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
 
+    //Get Student's Profile Information || Returns Student 
+    public Student getStudentProfile(String username, String role) {
+        if(verifyUser(username, role)) {
+            return studentRepository.findByUsername(username)
+                .orElseThrow(() -> new ApiRequestException("Provided Wrong Username"));
+        } else {
+            throw new ApiRequestException("Provided Wrong Username");
+        }
+    }
+    
+    //Authenticate User as a Professor || Returns Boolean
     private boolean verifyUser(String username, String role) {
         String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
         String currentRole = ""; 
@@ -26,14 +37,4 @@ public class StudentService {
         }
         return (currentUser.equals(username)) && (currentRole.equals(role));
     }
-
-    public Student getStudentProfile(String username, String role) {
-        if(verifyUser(username, role)) {
-            return studentRepository.findByUsername(username)
-                .orElseThrow(() -> new ApiRequestException("Provided Wrong Username"));
-        } else {
-            throw new ApiRequestException("Provided Wrong Username");
-        }
-    }
-    
 }

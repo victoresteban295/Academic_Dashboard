@@ -16,6 +16,7 @@ public class StudentController {
 
     private final StudentService studentService;
 
+    //Get Student's Profile Information || Returns Student 
     @GetMapping("/{username}")
     public ResponseEntity<Student> getStudentProfile(
             @PathVariable String username) {

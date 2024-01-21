@@ -47,7 +47,8 @@ public class GrouplistService {
     /************************************/
 
     //Create New Grouplist | Returns Grouplist 
-    public Grouplist createGrouplist(String username, String title, String groupId) {
+    public Grouplist createGrouplist(String inputUsername, String title, String groupId) {
+        String username = inputUsername.trim().toLowerCase();
         if(verifyUser(username)) {
             //Find User Document
             User user = mongoTemplate

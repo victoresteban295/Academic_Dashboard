@@ -16,6 +16,7 @@ public class ProfessorController {
 
     private final ProfessorService professorService;
 
+    //Get Professor's Profile Information || Returns Professor
     @GetMapping("/{username}")
     public ResponseEntity<Professor> getProfessorProfile(
             @PathVariable String username) {

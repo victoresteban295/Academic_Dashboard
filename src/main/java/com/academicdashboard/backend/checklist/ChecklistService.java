@@ -31,7 +31,8 @@ public class ChecklistService {
     /************************************/
 
     //Create New Checklist || Returns Checklist
-    public Checklist createChecklist(String username, String title, String listId) {
+    public Checklist createChecklist(String inputUsername, String title, String listId) {
+        String username = inputUsername.trim().toLowerCase();
         if(verifyUser(username)) {
             //Find User Document
             User user = mongoTemplate

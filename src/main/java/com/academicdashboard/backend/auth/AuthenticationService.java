@@ -51,33 +51,33 @@ public class AuthenticationService {
         if(request.getProfileType().equals("STUDENT")) {
             profile = studentRepository
                 .insert(Student.builder()
-                        .username(request.getUsername())
-                        .firstname(request.getFirstname())
-                        .middlename(request.getMiddlename())
-                        .lastname(request.getLastname())
+                        .username(request.getUsername().trim().toLowerCase())
+                        .firstname(request.getFirstname().trim().toLowerCase())
+                        .middlename(request.getMiddlename().trim().toLowerCase())
+                        .lastname(request.getLastname().trim().toLowerCase())
                         .birthMonth(request.getBirthMonth())
                         .birthDay(request.getBirthDay())
                         .birthYear(request.getBirthYear())
                         .gradeLvl(request.getGradeLvl())
                         .major(request.getMajor())
                         .minor(request.getMinor())
-                        .concentration(request.getConcentration())
+                        .concentration(request.getConcentration().trim().toLowerCase())
                         .build());
             role = Role.STUDENT;
         } else {
             profile = professorRepository
                 .insert(Professor.builder()
-                        .username(request.getUsername())
-                        .firstname(request.getFirstname())
-                        .middlename(request.getMiddlename())
-                        .lastname(request.getLastname())
+                        .username(request.getUsername().trim().toLowerCase())
+                        .firstname(request.getFirstname().trim().toLowerCase())
+                        .middlename(request.getMiddlename().trim().toLowerCase())
+                        .lastname(request.getLastname().trim().toLowerCase())
                         .birthMonth(request.getBirthMonth())
                         .birthDay(request.getBirthDay())
                         .birthYear(request.getBirthYear())
                         .department(request.getDepartment())
                         .academicRole(request.getAcademicRole())
                         .apptYear(request.getApptYear())
-                        .officeBuilding(request.getOfficeBuilding())
+                        .officeBuilding(request.getOfficeBuilding().trim().toLowerCase())
                         .officeRoom(request.getOfficeRoom())
                         .build());
             role = Role.PROFESSOR;
@@ -86,16 +86,16 @@ public class AuthenticationService {
         //Create New User Using Builder
         var user = User.builder()
             .userId(userId)
-            .firstname(request.getFirstname())
-            .middlename(request.getMiddlename())
-            .lastname(request.getLastname())
+            .firstname(request.getFirstname().trim().toLowerCase())
+            .middlename(request.getMiddlename().trim().toLowerCase())
+            .lastname(request.getLastname().trim().toLowerCase())
             .profileType(request.getProfileType())
-            .email(request.getEmail())
+            .email(request.getEmail().trim().toLowerCase())
             .phone(request.getPhone())
-            .username(request.getUsername())
+            .username(request.getUsername().trim().toLowerCase())
             .password(passwordEncoder.encode(request.getPassword()))
             .role(role)
-            .schoolName(request.getSchoolName())
+            .schoolName(request.getSchoolName().trim().toLowerCase())
             .schoolId(request.getSchoolId())
             .profile(profile)
             .courses(new ArrayList<>())
@@ -114,11 +114,11 @@ public class AuthenticationService {
         //to authenticate users based on the username & password
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                    request.getUsername(), 
+                    request.getUsername().trim().toLowerCase(), 
                     request.getPassword()));
 
-        //Pull Student User From Repository
-        var user = userRepository.findUserByUsername(request.getUsername())
+        //Pull User From Repository
+        var user = userRepository.findUserByUsername(request.getUsername().trim().toLowerCase())
             .orElseThrow(() -> new UsernameNotFoundException("User Not Found!"));
 
         //Create new JWT Token for Response
@@ -129,60 +129,12 @@ public class AuthenticationService {
         // saveUserToken(user.getUsername(), TokenType.REFRESH, refreshToken); //Store Refresh Token
 
         return AuthenticationResponse.builder()
-            .username(request.getUsername())
+            .username(request.getUsername().trim().toLowerCase())
             .role(user.getRole().toString())
             .accessToken(jwtToken)
             // .refreshToken(refreshToken)
             .build();
     }
-
-    //Request New Access Token (JWT) Using Refresh Token
-    // public AuthenticationResponse refreshToken(
-    //         String username, 
-    //         String role, 
-    //         String refreshToken) {
-    //
-    //     //Ensures Cookies Were Found
-    //     boolean hasCookies = (username != null) && (role != null) && (refreshToken != null);
-    //     if(!hasCookies) {
-    //         throw new ApiRequestException("No Access Token Found");
-    //     }
-    //
-    //     //Ensure Token is a Refresh Token
-    //     Token refreshTokenObj = tokenRepository.findByToken(refreshToken) 
-    //         .orElseThrow( () -> new ApiRequestException("Invalid Refresh Token"));
-    //
-    //     username = jwtService.extractUsername(refreshToken); //Extract username from JWT
-    //
-    //     if((username != null) && (refreshTokenObj.getTokenType() == TokenType.REFRESH)) {
-    //         var user = this.userRepository.findUserByUsername(username)
-    //             .orElseThrow();
-    //
-    //         boolean isTokenValid;
-    //         //NOTE: jwtService.isTokenValid() methods checks the actual expiration of the token itself
-    //         //Ensure Refresh Token Has Not Been Revoked By Our Backend 
-    //         if(!refreshTokenObj.isRevoked() && !refreshTokenObj.isExpired()) {
-    //             isTokenValid = true;
-    //         } else {isTokenValid = false;}
-    //
-    //         if(jwtService.isTokenValid(refreshToken, user) && isTokenValid) {
-    //             var accessToken = jwtService.generateToken(user); //Generate New Access Token
-    //             revokeAllUserAccessTokens(user.getUsername()); //Expire & Revoke All Old Access Tokens
-    //             saveUserToken(user.getUsername(), TokenType.ACCESS, accessToken); //Save New AccessToken to Repo
-    //
-    //             return AuthenticationResponse.builder()
-    //                 .username(username)
-    //                 .role(role)
-    //                 .accessToken(accessToken)
-    //                 .refreshToken(refreshToken) //Same Refresh Token Provided
-    //                 .build();
-    //         } else {
-    //             throw new ApiRequestException("Invalid Refresh Token");
-    //         }
-    //     } else {
-    //         throw new ApiRequestException("Invalid Refresh Token");
-    //     }
-    // }
 
     public void isAccessTokenValid(
             String username, 

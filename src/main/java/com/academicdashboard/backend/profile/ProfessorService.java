@@ -16,6 +16,18 @@ public class ProfessorService {
 
     private final ProfessorRepository professorRepository;
 
+    //Get Professor's Profile Information || Returns Professor
+    public Professor getProfessorProfile(String inputUsername, String role) {
+        String username = inputUsername.trim().toLowerCase();
+        if(verifyUser(username, role)) {
+            return professorRepository.findByUsername(username)
+                .orElseThrow(() -> new ApiRequestException("Could not find username in repo"));
+        } else {
+            throw new ApiRequestException("Username not in context holder");
+        }
+    }
+
+    //Authenticate User as a Professor || Returns Boolean
     private boolean verifyUser(String username, String role) {
         String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
         String currentRole = ""; 
@@ -26,15 +38,6 @@ public class ProfessorService {
         }
         
         return (currentUser.equals(username)) && (currentRole.equals(role));
-    }
-
-    public Professor getProfessorProfile(String username, String role) {
-        if(verifyUser(username, role)) {
-            return professorRepository.findByUsername(username)
-                .orElseThrow(() -> new ApiRequestException("Could not find username in repo"));
-        } else {
-            throw new ApiRequestException("Username not in context holder");
-        }
     }
     
 }

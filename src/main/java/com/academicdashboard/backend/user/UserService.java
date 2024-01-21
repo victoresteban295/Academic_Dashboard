@@ -62,7 +62,8 @@ public class UserService {
     /***********************************/
 
     //Get User's Checklists || Return List<Checklist>
-    public List<Checklist> getChecklists(String username) {
+    public List<Checklist> getChecklists(String inputUsername) {
+        String username = inputUsername.trim().toLowerCase();
         if(verifyUser(username)) {
             return userRepository.findUserByUsername(username)
                 .get().getChecklists();
@@ -72,7 +73,8 @@ public class UserService {
     }
 
     //Get User's Grouplists || Return List<Grouplist> 
-    public List<Grouplist> getGrouplists(String username) {
+    public List<Grouplist> getGrouplists(String inputUsername) {
+        String username = inputUsername.trim().toLowerCase();
         if(verifyUser(username)) {
             return userRepository.findUserByUsername(username)
                 .get().getGrouplists();
@@ -82,7 +84,8 @@ public class UserService {
     }
 
     //Get All User's Checklists || Return List<Checklist>
-    public List<Checklist> getAllChecklists(String username) {
+    public List<Checklist> getAllChecklists(String inputUsername) {
+        String username = inputUsername.trim().toLowerCase();
         if(verifyUser(username)) {
             User user = userRepository
                 .findUserByUsername(username)
@@ -104,7 +107,8 @@ public class UserService {
     }
 
     //Reorder User's Checklists || Return List<Checklist> 
-    public List<Checklist> reorderChecklists(String username, List<Checklist> reorderChecklists) {
+    public List<Checklist> reorderChecklists(String inputUsername, List<Checklist> reorderChecklists) {
+        String username = inputUsername.trim().toLowerCase();
         if(verifyUser(username)) {
             //User's Limited to 20 Checklists
             if(reorderChecklists.size() > 20) throw new ApiRequestException("User's Checklists Limit Exceeded: 20");
@@ -138,7 +142,8 @@ public class UserService {
     }
 
     //Reorder User's Grouplists || Return List<Grouplist>
-    public List<Grouplist> reorderGrouplists(String username, List<Grouplist> reorderGrouplists) {
+    public List<Grouplist> reorderGrouplists(String inputUsername, List<Grouplist> reorderGrouplists) {
+        String username = inputUsername.trim().toLowerCase();
         if(verifyUser(username)) {
             //User's Limited to 20 Grouplists
             if(reorderGrouplists.size() > 20) throw new ApiRequestException("User's Grouplist Limit Exceeded: 20");
@@ -178,20 +183,31 @@ public class UserService {
 
     /* Username, Email, Phone Validation */
     public void usernameExist(String username) {
+        //Keywords that are not allowed in a username
+        String user = username.toLowerCase().trim();
+        boolean testProf = user.contains("test") && user.contains("professor");
+        boolean testStud = user.contains("test") && user.contains("student");
+        boolean demoProf = user.contains("demo") && user.contains("professor");
+        boolean demoStud = user.contains("demo") && user.contains("student");
+        boolean userUnique = testProf && testStud && demoProf && demoStud;
+
         //True = Exist || False == Doesn't Exist
-        boolean exists = userRepository.findUserByUsername(username).isPresent();
-        if(exists) {
+        boolean exists = userRepository.findUserByUsername(user).isPresent();
+        if(exists || !userUnique) {
             throw new ApiRequestException("Username Is Already Taken");
         }
     }
-    public void emailExist(String email) {
+    public void emailExist(String inputEmail) {
+        String email = inputEmail.trim().toLowerCase();
         //True = Exist || False == Doesn't Exist
         boolean exists = userRepository.findUserByEmail(email).isPresent();
         if(exists) {
             throw new ApiRequestException("Email Is Already Taken");
         }
     }
-    public void phoneExist(String phone) {
+    public void phoneExist(String inputPhone) {
+        String phone = inputPhone.trim();
+        //True = Exist || False == Doesn't Exist
         //True = Exist || False == Doesn't Exist
         boolean exists = userRepository.findUserByPhone(phone).isPresent();
         if(exists) {
