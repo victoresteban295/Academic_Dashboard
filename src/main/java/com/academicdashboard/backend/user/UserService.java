@@ -189,7 +189,7 @@ public class UserService {
         boolean testStud = user.contains("test") && user.contains("student");
         boolean demoProf = user.contains("demo") && user.contains("professor");
         boolean demoStud = user.contains("demo") && user.contains("student");
-        boolean userUnique = testProf && testStud && demoProf && demoStud;
+        boolean userUnique = !(testProf || testStud || demoProf || demoStud);
 
         //True = Exist || False == Doesn't Exist
         boolean exists = userRepository.findUserByUsername(user).isPresent();
